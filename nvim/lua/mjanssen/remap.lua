@@ -1,3 +1,5 @@
+vim.g.mapleader = " "
+
 vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
 
 -- keep cursor in the middle of screen when jumping up/down
@@ -10,6 +12,11 @@ vim.keymap.set("n", "N", "Nzzzv")
 
 -- keep copied items in buffer when pasting with leader
 vim.keymap.set("x", "<leader>p", "\"_dP")
+
+-- manage error bleeding
+vim.keymap.set("n", "<leader>es", vim.diagnostic.open_float)
+vim.keymap.set("n", "<leader>en", vim.diagnostic.goto_next)
+vim.keymap.set("n", "<leader>ep", vim.diagnostic.goto_prev)
 
 -- allow leader y to yank into system clipboard
 vim.keymap.set("n", "<leader>y", "\"+y")
@@ -27,4 +34,7 @@ vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
 -- replace selected word throughout document
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
+
+-- format shortcut
+vim.keymap.set("n", "<leader>ff", vim.lsp.buf.format)
 
