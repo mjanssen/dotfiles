@@ -37,4 +37,6 @@ vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><
 
 -- format shortcut
 vim.keymap.set("n", "<leader>ff", vim.lsp.buf.format)
+vim.keymap.set("n", "<leader>fi", "<cmd>SortImport<CR>zz")
 
+vim.keymap.set("n", "<leader>cad", "<cmd>:!cp '%:p' '%:p:h/%:t:r-copy.%:e'<CR>")

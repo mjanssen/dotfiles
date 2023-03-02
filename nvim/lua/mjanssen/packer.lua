@@ -33,6 +33,9 @@ return require('packer').startup(function(use)
     use('mbbill/undotree')
     use('tpope/vim-fugitive')
 
+    use('ruanyl/vim-sort-imports')
+    use('folke/zen-mode.nvim')
+
     use {
         'VonHeikemen/lsp-zero.nvim',
         requires = {
@@ -47,6 +50,7 @@ return require('packer').startup(function(use)
             { 'hrsh7th/cmp-path' },
             { 'saadparwaiz1/cmp_luasnip' },
             { 'hrsh7th/cmp-nvim-lsp' },
+
             { 'hrsh7th/cmp-nvim-lua' },
 
             -- Snippets
@@ -57,4 +61,3 @@ return require('packer').startup(function(use)
 
     use('jose-elias-alvarez/null-ls.nvim')
 end)
-
