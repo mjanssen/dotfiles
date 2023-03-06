@@ -3,6 +3,8 @@ alt - h : yabai -m window --focus west
 alt - j : yabai -m window --focus south
 alt - k : yabai -m window --focus north
 alt - l : yabai -m window --focus east
+alt - d : yabai -m display --focus north
+alt - f : yabai -m display --focus south
 
 # modifying the layout
 
@@ -12,9 +14,11 @@ alt + shift - j : yabai -m window --swap south || $(yabai -m window --display so
 alt + shift - k : yabai -m window --swap north || $(yabai -m window --display north; yabai -m display --focus north)
 alt + shift - l : yabai -m window --swap east || $(yabai -m window --display east; yabai -m display --focus east)
 
-# moving windows to display left & right
+# moving windows to display other display
 alt + shift - s : yabai -m window --display west; yabai -m display --focus west;
 alt + shift - g : yabai -m window --display east; yabai -m display --focus east;
+alt + shift - f : yabai -m window --display south; yabai -m display --focus south;
+alt + shift - d : yabai -m window --display north; yabai -m display --focus north;
 
 # moving windows to previous and next space
 alt + shift - p : yabai -m window --space prev;
@@ -42,10 +46,11 @@ alt + shift - t : yabai -m window --toggle float --grid 4:4:1:1:2:2
 # modifying window size
 
 # maximize a window
-alt + shift - f : yabai -m window --toggle zoom-fullscreen
+alt + shift - m : yabai -m window --toggle zoom-fullscreen
 
 # balance out tree of windows (resize to occupy same area)
 alt + shift - e : yabai -m space --balance
 
-# manage yabai status ctrl + alt - q : brew services stop yabai
+# manage yabai status
+ctrl + alt - q : brew services stop yabai
 ctrl + alt - s : brew services start yabai
