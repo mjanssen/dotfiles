@@ -25,16 +25,21 @@ return require('packer').startup(function(use)
         end
     })
 
+
     use { "catppuccin/nvim", as = "catppuccin" }
 
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
     use('nvim-treesitter/playground')
     use('theprimeagen/harpoon')
     use('mbbill/undotree')
+
     use('tpope/vim-fugitive')
+    use('tpope/vim-commentary')
 
     use('ruanyl/vim-sort-imports')
     use('folke/zen-mode.nvim')
+
+    use('nvim-lualine/lualine.nvim')
 
     use {
         'VonHeikemen/lsp-zero.nvim',
