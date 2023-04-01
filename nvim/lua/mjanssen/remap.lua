@@ -19,9 +19,8 @@ vim.keymap.set("n", "<leader>en", vim.diagnostic.goto_next)
 vim.keymap.set("n", "<leader>ep", vim.diagnostic.goto_prev)
 
 -- allow leader y to yank into system clipboard
-vim.keymap.set("n", "<leader>y", "\"+y")
-vim.keymap.set("v", "<leader>y", "\"+y")
-vim.keymap.set("n", "<leader>Y", "\"+Y")
+vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
+vim.keymap.set("n", "<leader>Y", [["+Y]])
 
 -- disable caps Q...
 vim.keymap.set("n", "Q", "<nop>")
