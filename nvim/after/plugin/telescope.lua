@@ -9,18 +9,18 @@ end)
 -- Style telescope with the styling of catppuccin
 local colors = require("catppuccin.palettes").get_palette()
 local TelescopeColor = {
-	TelescopeMatching = { fg = colors.flamingo },
-	TelescopeSelection = { fg = colors.text, bg = colors.surface0, bold = true },
+	TelescopeMatching = { fg = colors.peach },
+	TelescopeSelection = { fg = colors.lavender, bg = colors.surface0, bold = true },
 
 	TelescopePromptPrefix = { bg = colors.mantle },
 	TelescopePromptNormal = { bg = colors.mantle },
-	TelescopeResultsNormal = { bg = colors.mantle, fg = colors.surface0 },
+	TelescopeResultsNormal = { bg = colors.mantle, fg = colors.overlay0 },
 	TelescopePreviewNormal = { bg = colors.mantle },
 	TelescopePromptBorder = { bg = colors.mantle, fg = colors.surface0 },
 	TelescopeResultsBorder = { bg = colors.mantle, fg = colors.surface0 },
 	TelescopePreviewBorder = { bg = colors.mantle, fg = colors.surface0 },
-	TelescopePromptTitle = { bg = colors.mantle, fg = colors.surface0 },
-	TelescopePreviewTitle = { bg = colors.mantle, fg = colors.surface0 },
+	TelescopePromptTitle = { bg = colors.mantle, fg = colors.lavender },
+	TelescopePreviewTitle = { bg = colors.mantle, fg = colors.lavender },
 }
 
 for hl, col in pairs(TelescopeColor) do
