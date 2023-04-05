@@ -25,6 +25,10 @@ vim.keymap.set("n", "<leader>Y", [["+Y]])
 -- disable caps Q...
 vim.keymap.set("n", "Q", "<nop>")
 
+-- Git Blame
+vim.keymap.set('n', "<Leader>bt", "<cmd>GitBlameToggle<cr>")
+vim.keymap.set('n', "<Leader>bo", "<cmd>GitBlameOpenCommitURL<cr>")
+
 -- quickfix list
 vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")

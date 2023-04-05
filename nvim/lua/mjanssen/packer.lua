@@ -32,6 +32,10 @@ return require('packer').startup(function(use)
     use('mbbill/undotree')
 
     use('tpope/vim-fugitive')
+
+    -- Git Blame
+    use('f-person/git-blame.nvim')
+
     use('tpope/vim-commentary')
 
     use('ruanyl/vim-sort-imports')
