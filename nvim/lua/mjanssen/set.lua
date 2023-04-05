@@ -30,3 +30,6 @@ vim.opt.updatetime = 50
 
 vim.opt.colorcolumn = "100"
 vim.opt.fixendofline = true
+
+-- GitBlame
+vim.g.gitblame_date_format = '%r'
