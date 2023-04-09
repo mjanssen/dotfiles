@@ -24,13 +24,13 @@ lsp.configure('lua_ls', {
 })
 
 lsp.configure('tsserver', {
-    on_attach = on_attach,
+    on_attach = lsp.on_attach,
     root_dir = nvim_lsp.util.root_pattern("package.json"),
     single_file_support = false
 })
 
 lsp.configure('denols', {
-    on_attach = on_attach,
+    on_attach = lsp.on_attach,
     root_dir = nvim_lsp.util.root_pattern("deno.json", "deno.jsonc")
 })
 
