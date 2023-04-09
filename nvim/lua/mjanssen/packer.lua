@@ -24,24 +24,24 @@ return require('packer').startup(function(use)
     })
 
 
-    use { "catppuccin/nvim", as = "catppuccin" }
+    use { 'catppuccin/nvim', as = 'catppuccin' }
 
-    use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
-    use('nvim-treesitter/playground')
-    use('theprimeagen/harpoon')
-    use('mbbill/undotree')
+    use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+    use 'nvim-treesitter/playground'
+    use 'theprimeagen/harpoon'
+    use 'mbbill/undotree'
 
-    use('tpope/vim-fugitive')
+    use 'tpope/vim-fugitive'
 
     -- Git Blame
-    use('f-person/git-blame.nvim')
+    use 'f-person/git-blame.nvim'
 
-    use('tpope/vim-commentary')
+    use 'tpope/vim-commentary'
 
-    use('ruanyl/vim-sort-imports')
-    use('folke/zen-mode.nvim')
+    use 'ruanyl/vim-sort-imports'
+    use 'folke/zen-mode.nvim'
 
-    use('nvim-lualine/lualine.nvim')
+    use 'nvim-lualine/lualine.nvim'
 
     use {
         'VonHeikemen/lsp-zero.nvim',
@@ -66,5 +66,5 @@ return require('packer').startup(function(use)
         }
     }
 
-    use('jose-elias-alvarez/null-ls.nvim')
+    use 'jose-elias-alvarez/null-ls.nvim'
 end)
