@@ -1,11 +1,11 @@
 local lsp = require('lsp-zero')
-local nvim_lsp = require('lspconfig')
+local lspconfig = require('lspconfig')
 
 lsp.preset('recommended')
 
 lsp.ensure_installed({
+    'rome',
     'tsserver',
-    'eslint',
     'lua_ls',
     'rust_analyzer',
     'tailwindcss',
@@ -25,29 +25,34 @@ lsp.configure('lua_ls', {
 
 lsp.configure('tsserver', {
     on_attach = lsp.on_attach,
-    root_dir = nvim_lsp.util.root_pattern("package.json"),
+    root_dir = lspconfig.util.root_pattern("package.json"),
     single_file_support = false
+})
+
+lsp.configure('rome', {
+    on_attach = lsp.on_attach,
+    cmd = { "rome", "lsp_proxy" }
 })
 
 lsp.configure('denols', {
     on_attach = lsp.on_attach,
-    root_dir = nvim_lsp.util.root_pattern("deno.json", "deno.jsonc")
+    root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc")
 })
 
 local cmp = require('cmp')
-local cmp_select = {behavior = cmp.SelectBehavior.Select}
+local cmp_select = { behavior = cmp.SelectBehavior.Select }
 local cmp_mappings = lsp.defaults.cmp_mappings({
-  ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-  ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-  ['<C-y>'] = cmp.mapping.confirm({ select = true }),
-  ["<C-Space>"] = cmp.mapping.complete(),
+    ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
+    ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
+    ['<C-y>'] = cmp.mapping.confirm({ select = true }),
+    ["<C-Space>"] = cmp.mapping.complete(),
 })
 
 cmp_mappings['<Tab>'] = nil
 cmp_mappings['<S-Tab>'] = nil
 
 lsp.setup_nvim_cmp({
-  mapping = cmp_mappings
+    mapping = cmp_mappings
 })
 
 lsp.on_attach(function(client, bufnr)
@@ -64,6 +69,8 @@ lsp.on_attach(function(client, bufnr)
     vim.keymap.set("n", "<leader>vrn", vim.lsp.buf.rename, opts)
     vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
 end)
+
+lspconfig.rome.setup{}
 
 lsp.setup()
 

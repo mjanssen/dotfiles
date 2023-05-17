@@ -23,7 +23,6 @@ return require('packer').startup(function(use)
         end
     })
 
-
     use { 'catppuccin/nvim', as = 'catppuccin' }
 
     use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
@@ -41,11 +40,6 @@ return require('packer').startup(function(use)
     use 'folke/zen-mode.nvim'
 
     use 'nvim-lualine/lualine.nvim'
-
-    use {
-        'jamestthompson3/sort-import.nvim',
-        config = function() require 'sort-import'.setup() end
-    }
 
     use {
         'VonHeikemen/lsp-zero.nvim',
@@ -68,4 +62,6 @@ return require('packer').startup(function(use)
             { 'rafamadriz/friendly-snippets' },
         }
     }
+
+    use 'jose-elias-alvarez/null-ls.nvim'
 end)
