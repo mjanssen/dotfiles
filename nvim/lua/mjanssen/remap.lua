@@ -40,7 +40,7 @@ vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><
 
 -- format shortcut
 vim.keymap.set("n", "<leader>ff", vim.lsp.buf.format)
-vim.keymap.set("n", "<leader>fi", "<cmd>:!~/.local/share/nvim/mason/bin/rome check --apply-unsafe '%:p'<CR>zz")
+vim.keymap.set("n", "<leader>fi", "<cmd>:!~/.local/share/nvim/mason/bin/rome check --apply-unsafe '%:p'<CR>z")
 
 -- copy file in filetree
 vim.keymap.set("n", "<leader>cad", "<cmd>:!cp '%:p' '%:p:h/%:t:r-copy.%:e'<CR>")
