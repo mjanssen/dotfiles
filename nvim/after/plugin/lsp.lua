@@ -4,6 +4,7 @@ local lspconfig = require('lspconfig')
 lsp.preset('recommended')
 
 lsp.ensure_installed({
+    'pylsp',
     'rome',
     'tsserver',
     'lua_ls',
@@ -31,7 +32,7 @@ lsp.configure('tsserver', {
 
 lsp.configure('rome', {
     on_attach = lsp.on_attach,
-    cmd = { "rome", "lsp_proxy" }
+    cmd = { "rome", "lsp-proxy" }
 })
 
 lsp.configure('denols', {
@@ -70,7 +71,30 @@ lsp.on_attach(function(client, bufnr)
     vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
 end)
 
-lspconfig.rome.setup{}
+lspconfig.rome.setup {}
+
+-- Python
+lspconfig.pylsp.setup{
+    settings = {
+        pylsp = {
+            plugins = {
+                ruff = {
+                    enabled = true,
+                    extendSelect = { -- for reference, see https://beta.ruff.rs/docs/rules/#error-e
+                        "I",         -- isort
+                        "E",         -- pycodestyle Error
+                        "W",         -- pycodestyle Warning
+                    },
+                    format = {
+                        "I",
+                    },
+                    lineLength = 88,
+                    exclude = { "./alembic" }
+                }
+            }
+        }
+    }
+}
 
 lsp.setup()
 
