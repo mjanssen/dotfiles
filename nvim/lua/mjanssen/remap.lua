@@ -38,8 +38,9 @@ vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 -- replace selected word throughout document
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
 
--- format shortcut
-vim.keymap.set("n", "<leader>ff", vim.lsp.buf.format)
+-- format shortcut using formatter.nvim
+vim.keymap.set("n", "<leader>ff", "<cmd>:Format<CR>")
+-- rome import sorting
 vim.keymap.set("n", "<leader>fi", "<cmd>:!~/.local/share/nvim/mason/bin/rome check --apply-unsafe '%:p'<CR>z")
 
 -- copy file in filetree

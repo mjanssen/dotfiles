@@ -13,16 +13,6 @@ return require('packer').startup(function(use)
         requires = { { 'nvim-lua/plenary.nvim' } }
     }
 
-    use({
-        'rose-pine/neovim',
-        as = 'rose-pine',
-        config = function()
-            require('rose-pine').setup({
-                dark_variant = 'moon',
-            })
-        end
-    })
-
     use { 'catppuccin/nvim', as = 'catppuccin' }
 
     use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
@@ -30,38 +20,37 @@ return require('packer').startup(function(use)
     use 'theprimeagen/harpoon'
     use 'mbbill/undotree'
 
-    use 'tpope/vim-fugitive'
+    -- Mason + LSP
+    use {
+        "williamboman/mason.nvim",
+        "williamboman/mason-lspconfig.nvim",
+        "neovim/nvim-lspconfig",
+    }
+
+    -- Autocomplete
+    use "L3MON4D3/LuaSnip"
+    use({
+        "hrsh7th/nvim-cmp",
+        -- config = [[require('config.nvim-cmp')]],
+        requires = {
+            "saadparwaiz1/cmp_luasnip",
+            "hrsh7th/cmp-nvim-lua",
+            "hrsh7th/cmp-nvim-lsp",
+            "hrsh7th/cmp-path",
+            "hrsh7th/cmp-buffer",
+        },
+    })
+
+    -- Formatter
+    use "mhartington/formatter.nvim"
 
     -- Git Blame
     use 'f-person/git-blame.nvim'
-
+    -- Git in nvim
+    use 'tpope/vim-fugitive'
     use 'tpope/vim-commentary'
 
     use 'folke/zen-mode.nvim'
 
     use 'nvim-lualine/lualine.nvim'
-
-    use {
-        'VonHeikemen/lsp-zero.nvim',
-        requires = {
-            -- LSP Support
-            { 'neovim/nvim-lspconfig' },
-            { 'williamboman/mason.nvim' },
-            { 'williamboman/mason-lspconfig.nvim' },
-
-            -- Autocompletion
-            { 'hrsh7th/nvim-cmp' },
-            { 'hrsh7th/cmp-buffer' },
-            { 'hrsh7th/cmp-path' },
-            { 'saadparwaiz1/cmp_luasnip' },
-            { 'hrsh7th/cmp-nvim-lsp' },
-            { 'hrsh7th/cmp-nvim-lua' },
-
-            -- Snippets
-            { 'L3MON4D3/LuaSnip' },
-            { 'rafamadriz/friendly-snippets' },
-        }
-    }
-
-    use 'jose-elias-alvarez/null-ls.nvim'
 end)
