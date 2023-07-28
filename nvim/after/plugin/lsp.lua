@@ -157,7 +157,6 @@ lspconfig.pylsp.setup({
 vim.diagnostic.config({
 	virtual_text = true,
 	float = {
-		source = true,
 		format = function(diagnostic)
 			return string.format("%s <%s>", diagnostic.message, diagnostic.source)
 		end,

@@ -2,7 +2,7 @@ local formatter = require("formatter")
 local utils = require("formatter.util")
 
 local romeConfig = function()
-    -- jsx-quote-style requires rome@12.1.3-nightly.4c8cf32
+	-- jsx-quote-style requires rome@12.1.3-nightly.4c8cf32
 	return {
 		exe = "rome",
 		args = { "format", "--jsx-quote-style", "double", "--stdin-file-path", utils.get_current_buffer_file_path() },
@@ -23,12 +23,17 @@ local formatterFTs = {
 			return {
 				exe = "ruff",
 				args = {
+					-- attempt to automatically fix lint violations
 					"--fix",
+					-- exit with 0
 					"-e",
+					-- no-cache
 					"-n",
+					-- quiet
 					"-q",
 					"--stdin-filename",
 					"%",
+					-- push output into stdout
 					"-",
 				},
 				stdin = true,
@@ -44,15 +49,10 @@ local formatterFTs = {
 			}
 		end,
 	},
-	lua = { -- "formatter.filetypes.lua" defines default configurations for the
-		-- "lua" filetype
+	lua = {
 		require("formatter.filetypes.lua").stylua,
 	},
-	-- Use the special "*" filetype for defining formatter configurations on
-	-- any filetype
 	["*"] = {
-		-- "formatter.filetypes.any" defines default configurations for any
-		-- filetype
 		require("formatter.filetypes.any").remove_trailing_whitespace,
 	},
 }
