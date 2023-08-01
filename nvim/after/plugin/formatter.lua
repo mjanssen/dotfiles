@@ -6,7 +6,7 @@ local romeConfig = function()
 	return {
 		exe = "rome",
 		args = { "format", "--jsx-quote-style", "double", "--stdin-file-path", utils.get_current_buffer_file_path() },
-		stdin = false,
+		stdin = true,
 	}
 end
 
