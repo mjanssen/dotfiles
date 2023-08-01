@@ -6,6 +6,9 @@ local cmp_mappings = {
     ['<CR>'] = cmp.mapping.confirm({ select = false }),
     ['<C-y>'] = cmp.mapping.confirm({ select = false }),
 
+    -- Autocomplete suggestions
+    ["<C-Space>"] = cmp.mapping.complete(),
+
     ['<Up>'] = cmp.mapping.select_prev_item(cmp_select),
     ['<Down>'] = cmp.mapping.select_next_item(cmp_select),
 
