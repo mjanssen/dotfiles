@@ -5,7 +5,13 @@ local romeConfig = function()
 	-- jsx-quote-style requires rome@12.1.3-nightly.4c8cf32
 	return {
 		exe = "rome",
-		args = { "format", "--jsx-quote-style", "double", "--stdin-file-path", utils.get_current_buffer_file_path() },
+		args = {
+			"format",
+			"--jsx-quote-style",
+			"double",
+			"--stdin-file-path",
+			utils.escape_path(utils.get_current_buffer_file_path()),
+		},
 		stdin = true,
 	}
 end
