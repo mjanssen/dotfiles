@@ -11,7 +11,7 @@ vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 
 -- keep copied items in buffer when pasting with leader
-vim.keymap.set("x", "<leader>p", "\"_dP")
+vim.keymap.set("x", "<leader>p", '"_dP')
 
 -- manage error bleeding
 vim.keymap.set("n", "<leader>es", vim.diagnostic.open_float)
@@ -26,8 +26,8 @@ vim.keymap.set("n", "<leader>Y", [["+Y]])
 vim.keymap.set("n", "Q", "<nop>")
 
 -- Git Blame
-vim.keymap.set('n', "<Leader>bt", "<cmd>GitBlameToggle<cr>")
-vim.keymap.set('n', "<Leader>bo", "<cmd>GitBlameOpenCommitURL<cr>")
+vim.keymap.set("n", "<Leader>bt", "<cmd>GitBlameToggle<cr>")
+vim.keymap.set("n", "<Leader>bo", "<cmd>GitBlameOpenCommitURL<cr>")
 
 -- quickfix list
 vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
@@ -45,3 +45,4 @@ vim.keymap.set("n", "<leader>fi", "<cmd>:!~/.local/share/nvim/mason/bin/rome che
 
 -- copy file in filetree
 vim.keymap.set("n", "<leader>cad", "<cmd>:!cp '%:p' '%:p:h/%:t:r-copy.%:e'<CR>")
+
