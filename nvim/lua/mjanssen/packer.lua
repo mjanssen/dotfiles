@@ -15,9 +15,11 @@ return require("packer").startup(function(use)
 	})
 
 	use({ "catppuccin/nvim", as = "catppuccin" })
+	use({ "rose-pine/neovim", as = "rose-pine" })
 
 	use({ "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
 	use("nvim-treesitter/nvim-treesitter-context")
+	use("nvim-treesitter/playground")
 
 	use("theprimeagen/harpoon")
 	use("mbbill/undotree")
@@ -48,6 +50,7 @@ return require("packer").startup(function(use)
 
 	-- Git Blame
 	use("f-person/git-blame.nvim")
+
 	-- Git in nvim
 	use("tpope/vim-fugitive")
 	use("tpope/vim-commentary")
@@ -55,4 +58,16 @@ return require("packer").startup(function(use)
 	use("folke/zen-mode.nvim")
 
 	use("nvim-lualine/lualine.nvim")
+
+	use({
+		"tamton-aquib/duck.nvim",
+		config = function()
+			vim.keymap.set("n", "<leader>dd", function()
+				require("duck").hatch("🦀")
+			end, {})
+			vim.keymap.set("n", "<leader>dk", function()
+				require("duck").cook("🦀")
+			end, {})
+		end,
+	})
 end)

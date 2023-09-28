@@ -4,7 +4,8 @@ local utils = require("formatter.util")
 local romeConfig = function()
 	-- jsx-quote-style requires rome@12.1.3-nightly.4c8cf32
 	return {
-		exe = "rome",
+		-- Overwrite nvim rome with local rome for nightly version
+		exe = "/usr/local/bin/rome",
 		args = {
 			"format",
 			"--jsx-quote-style",
@@ -69,6 +70,7 @@ local jsFTs = {
 	"javascriptreact",
 	"typescript",
 	"typescriptreact",
+	"astro",
 }
 for _, ft in ipairs(jsFTs) do
 	formatterFTs[ft] = { romeConfig }

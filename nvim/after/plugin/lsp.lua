@@ -123,6 +123,7 @@ require("mason-lspconfig").setup_handlers({
 })
 
 lspconfig.rome.setup({})
+lspconfig.astro.setup({})
 
 lspconfig.ruff_lsp.setup({
 	on_attach = on_attach,

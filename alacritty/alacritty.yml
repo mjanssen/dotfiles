@@ -4,21 +4,50 @@ import:
 env:
   TERM: xterm-256color
 
+window:
+  decorations: "ButtonLess"
+  padding:
+    x: 10
+    y: 30
+  startup_mode: "Maximized"
+
 font:
+  offset:
+      x: 0    # For letter spacing (default: 0).
+      y: 1    # For line spacing (default: 0).
+
   normal:
-    family: JetBrainsMonoNL Nerd Font
-    style: Regular
+    family: Zed Mono
+    style: Extended
 
   bold:
-    family: JetBrainsMonoNL Nerd Font
-    style: Bold
+    family: Zed Mono
+    style: Bold Extended
 
   italic:
-    family: JetBrainsMonoNL Nerd Font
-    style: Italic
+    family: Zed Mono
+    style: Extended Italic
 
   bold_italic:
-    family: JetBrainsMonoNL Nerd Font
-    style: Bold Italic
+    family: Zed Mono
+    style: Bold Italic Extended
 
   size: 13
+# font:
+#   normal:
+#     family: JetBrainsMonoNL Nerd Font
+#     style: Regular
+
+#   bold:
+#     family: JetBrainsMonoNL Nerd Font
+#     style: Bold
+
+#   italic:
+#     family: JetBrainsMonoNL Nerd Font
+#     style: Italic
+
+#   bold_italic:
+#     family: JetBrainsMonoNL Nerd Font
+#     style: Bold Italic
+
+#   size: 13
