@@ -29,4 +29,6 @@ vim.opt.isfname:append("@-@")
 vim.opt.updatetime = 50
 
 -- GitBlame
-vim.g.gitblame_date_format = "%r"
+vim.g.gitblame_date_format = "%c"
+
+vim.opt.cursorline = true

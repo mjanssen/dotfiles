@@ -1,5 +1,6 @@
 import:
-  - ~/.config/alacritty/catppuccin/catppuccin-macchiato.yml
+  # - ~/.config/alacritty/catppuccin/catppuccin-macchiato.yml
+  - ~/.config/alacritty/themes/kanagawa.yml
 
 env:
   TERM: xterm-256color
@@ -32,7 +33,7 @@ font:
     family: Zed Mono
     style: Bold Italic Extended
 
-  size: 13
+  size: 12
 # font:
 #   normal:
 #     family: JetBrainsMonoNL Nerd Font
