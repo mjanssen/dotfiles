@@ -128,7 +128,16 @@ lspconfig.astro.setup({})
 lspconfig.ruff_lsp.setup({
 	on_attach = on_attach,
 	init_options = {
-		settings = {},
+		settings = {
+			args = {
+				"--extend-select",
+				"E",
+				"--extend-select",
+				"F",
+				"--extend-select",
+				"W",
+			},
+		},
 	},
 })
 
@@ -137,18 +146,13 @@ lspconfig.pylsp.setup({
 	settings = {
 		pylsp = {
 			plugins = {
-				ruff = {
-					enabled = true,
-					extendSelect = { -- for reference, see https://beta.ruff.rs/docs/rules/#error-e
-						"I", -- isort
-						"E", -- pycodestyle Error
-						"W", -- pycodestyle Warning
+				plugins = {
+					pycodestyle = {
+						enabled = false,
 					},
-					format = {
-						"I",
+					flake8 = {
+						enabled = false,
 					},
-					lineLength = 88,
-					exclude = { "./alembic" },
 				},
 			},
 		},
