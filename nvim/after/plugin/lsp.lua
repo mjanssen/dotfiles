@@ -31,7 +31,13 @@ end
 
 -- keybindings
 -- https://github.com/neovim/nvim-lspconfig#keybindings-and-completion
-local on_attach = function(event)
+local on_attach = function(event, bufnr)
+	-- Inlay hints -- enable when stable
+	-- local client = vim.lsp.get_client_by_id(event.data.client_id)
+	-- if client.server_capabilities.inlayHintProvider then
+		-- vim.lsp.inlay_hint(event.buf, true)
+	-- end
+
 	local opts = { buffer = event.buf, remap = false }
 
 	-- Strip out node_module suggestions
@@ -43,7 +49,7 @@ local on_attach = function(event)
 	vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
 	vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, opts)
 
-	vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+	vim.keymap.set("n", "<K>", vim.lsp.buf.hover, opts)
 	vim.keymap.set("n", "<leader>vws", vim.lsp.buf.workspace_symbol, opts)
 	vim.keymap.set("n", "<leader>vd", vim.diagnostic.open_float, opts)
 	vim.keymap.set("n", "[d", vim.diagnostic.goto_next, opts)
@@ -51,6 +57,7 @@ local on_attach = function(event)
 	vim.keymap.set("n", "<leader>vca", vim.lsp.buf.code_action, opts)
 	vim.keymap.set("n", "<leader>vrr", vim.lsp.buf.references, opts)
 	vim.keymap.set("n", "<leader>vrn", vim.lsp.buf.rename, opts)
+	vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
 	vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
 end
 
@@ -69,7 +76,7 @@ require("mason-lspconfig").setup({
 	ensure_installed = {
 		"ruff_lsp",
 		"pylsp",
-		"rome",
+		"biome",
 		"tsserver",
 		"lua_ls",
 		"rust_analyzer",
@@ -110,9 +117,9 @@ require("mason-lspconfig").setup_handlers({
 			},
 		})
 	end,
-	["rome"] = function()
-		lspconfig.rome.setup({
-			cmd = { "rome", "lsp_proxy" },
+	["biome"] = function()
+		lspconfig.biome.setup({
+			cmd = { "biome", "lsp_proxy" },
 		})
 	end,
 	["denols"] = function()
@@ -122,7 +129,7 @@ require("mason-lspconfig").setup_handlers({
 	end,
 })
 
-lspconfig.rome.setup({})
+lspconfig.biome.setup({})
 lspconfig.astro.setup({})
 
 lspconfig.ruff_lsp.setup({

@@ -1,11 +1,9 @@
 local formatter = require("formatter")
 local utils = require("formatter.util")
 
-local romeConfig = function()
-	-- jsx-quote-style requires rome@12.1.3-nightly.4c8cf32
+local biomeConfig = function()
 	return {
-		-- Overwrite nvim rome with local rome for nightly version
-		exe = "/usr/local/bin/rome",
+		exe = "biome",
 		args = {
 			"format",
 			"--jsx-quote-style",
@@ -73,7 +71,7 @@ local jsFTs = {
 	"astro",
 }
 for _, ft in ipairs(jsFTs) do
-	formatterFTs[ft] = { romeConfig }
+	formatterFTs[ft] = { biomeConfig }
 end
 
 formatter.setup({

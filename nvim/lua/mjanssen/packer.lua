@@ -9,7 +9,7 @@ return require("packer").startup(function(use)
 
 	use({
 		"nvim-telescope/telescope.nvim",
-		tag = "0.1.0",
+		tag = "0.1.4",
 		-- or                            , branch = '0.1.x',
 		requires = { { "nvim-lua/plenary.nvim" } },
 	})
@@ -59,16 +59,4 @@ return require("packer").startup(function(use)
 	use("folke/zen-mode.nvim")
 
 	use("nvim-lualine/lualine.nvim")
-
-	use({
-		"tamton-aquib/duck.nvim",
-		config = function()
-			vim.keymap.set("n", "<leader>dd", function()
-				require("duck").hatch("🦀")
-			end, {})
-			vim.keymap.set("n", "<leader>dk", function()
-				require("duck").cook("🦀")
-			end, {})
-		end,
-	})
 end)
