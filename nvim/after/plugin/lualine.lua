@@ -7,7 +7,7 @@ require("lualine").setup({
 			{ git_blame.get_current_blame_text, cond = git_blame.is_blame_text_available },
 		},
 		lualine_x = {},
-		lualine_y = { "filename" },
+		lualine_y = { "filename", "filetype" },
 	},
 	options = {
 		icons_enabled = false,
