@@ -14,6 +14,9 @@ vim.keymap.set("n", "<leader>ps", function()
 	builtin.grep_string({ search = vim.fn.input("Grep > ") })
 end)
 
+-- Keymap to check buffers in current project
+vim.keymap.set("n", "<leader>pc", "<cmd>lua require('telescope.builtin').buffers()<cr>")
+
 -- Style telescope with the styling of catppuccin
 local colors = require("catppuccin.palettes").get_palette()
 local TelescopeColor = {
