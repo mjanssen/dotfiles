@@ -35,7 +35,7 @@ local on_attach = function(event, bufnr)
 	-- Inlay hints -- enable when stable
 	-- local client = vim.lsp.get_client_by_id(event.data.client_id)
 	-- if client.server_capabilities.inlayHintProvider then
-		-- vim.lsp.inlay_hint(event.buf, true)
+	-- vim.lsp.inlay_hint(event.buf, true)
 	-- end
 
 	local opts = { buffer = event.buf, remap = false }
@@ -125,6 +125,24 @@ require("mason-lspconfig").setup_handlers({
 	["denols"] = function()
 		lspconfig.denols.setup({
 			root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
+		})
+	end,
+	["rust_analyzer"] = function()
+		lspconfig.rust_analyzer.setup({
+			assist = {
+				importEnforceGranularity = true,
+				importPrefix = "crate",
+			},
+			cargo = {
+				allFeatures = true,
+			},
+			inlayHints = { locationLinks = false },
+			diagnostics = {
+				enable = true,
+				experimental = {
+					enable = true,
+				},
+			},
 		})
 	end,
 })
