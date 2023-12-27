@@ -40,8 +40,6 @@ vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><
 
 -- format shortcut using formatter.nvim
 vim.keymap.set("n", "<leader>ff", "<cmd>:Format<CR>")
--- biome import sorting
-vim.keymap.set("n", "<leader>fi", "<cmd>:!~/.local/share/nvim/mason/bin/biome check --apply-unsafe '%:p'<CR>z")
 
 -- copy file in filetree
 vim.keymap.set("n", "<leader>cad", "<cmd>:!cp '%:p' '%:p:h/%:t:r-copy.%:e'<CR>")

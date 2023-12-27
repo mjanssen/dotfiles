@@ -31,14 +31,20 @@ end
 
 -- keybindings
 -- https://github.com/neovim/nvim-lspconfig#keybindings-and-completion
-local on_attach = function(event, bufnr)
+local on_attach = function(client, bufnr)
 	-- Inlay hints -- enable when stable
 	-- local client = vim.lsp.get_client_by_id(event.data.client_id)
 	-- if client.server_capabilities.inlayHintProvider then
 	-- vim.lsp.inlay_hint(event.buf, true)
 	-- end
 
-	local opts = { buffer = event.buf, remap = false }
+	local opts = { buffer = bufnr, remap = false }
+
+	local sort_imports = client.name == "tsserver" or client.name == "biomejs" or client.name == "tailwindcss"
+	if sort_imports then
+		-- biome import sorting
+		vim.keymap.set("n", "<leader>fi", "<cmd>:!~/.local/share/nvim/mason/bin/biome check --apply '%:p'<CR>zz", opts)
+	end
 
 	-- Strip out node_module suggestions
 	vim.keymap.set("n", "gd", function()
@@ -86,11 +92,12 @@ require("mason-lspconfig").setup({
 })
 
 local lspconfig = require("lspconfig")
-local lsp_capabilities = require("cmp_nvim_lsp").default_capabilities()
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 local mason_lsp_default_handler = function(server_name)
 	lspconfig[server_name].setup({
-		capabilities = lsp_capabilities,
+		on_attach = on_attach,
+		capabilities = capabilities,
 	})
 end
 
@@ -105,26 +112,6 @@ require("mason-lspconfig").setup_handlers({
 					},
 				},
 			},
-		})
-	end,
-	["tsserver"] = function()
-		lspconfig.tsserver.setup({
-			single_file_support = false,
-			settings = {
-				completions = {
-					completeFunctionCalls = true,
-				},
-			},
-		})
-	end,
-	["biome"] = function()
-		lspconfig.biome.setup({
-			cmd = { "biome", "lsp_proxy" },
-		})
-	end,
-	["denols"] = function()
-		lspconfig.denols.setup({
-			root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
 		})
 	end,
 	["rust_analyzer"] = function()
@@ -145,43 +132,64 @@ require("mason-lspconfig").setup_handlers({
 			},
 		})
 	end,
-})
-
-lspconfig.biome.setup({})
-lspconfig.astro.setup({})
-
-lspconfig.ruff_lsp.setup({
-	on_attach = on_attach,
-	init_options = {
-		settings = {
-			args = {
-				"--extend-select",
-				"E",
-				"--extend-select",
-				"F",
-				"--extend-select",
-				"W",
+	["biome"] = function()
+		lspconfig.biome.setup({
+			cmd = { "biome", "lsp-proxy" },
+			root_dir = lspconfig.util.root_pattern("package.json", "node_modules", ".git", "biome.json"),
+		})
+	end,
+	["astro"] = function()
+		lspconfig.astro.setup({})
+	end,
+	["denols"] = function()
+		lspconfig.denols.setup({
+			root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
+		})
+	end,
+	["tsserver"] = function()
+		lspconfig.tsserver.setup({
+			single_file_support = false,
+			settings = {
+				completions = {
+					completeFunctionCalls = true,
+				},
 			},
-		},
-	},
-})
-
--- Python
-lspconfig.pylsp.setup({
-	settings = {
-		pylsp = {
-			plugins = {
-				plugins = {
-					pycodestyle = {
-						enabled = false,
-					},
-					flake8 = {
-						enabled = false,
+		})
+	end,
+	["ruff_lsp"] = function()
+		lspconfig.ruff_lsp.setup({
+			init_options = {
+				settings = {
+					args = {
+						"--extend-select",
+						"E",
+						"--extend-select",
+						"F",
+						"--extend-select",
+						"W",
 					},
 				},
 			},
-		},
-	},
+		})
+	end,
+	["pylsp"] = function()
+		lspconfig.pylsp.setup({
+			settings = {
+				pylsp = {
+					plugins = {
+						plugins = {
+							pycodestyle = {
+								enabled = false,
+							},
+							flake8 = {
+								enabled = false,
+							},
+						},
+					},
+				},
+			},
+		})
+	end,
 })
 
 vim.diagnostic.config({
