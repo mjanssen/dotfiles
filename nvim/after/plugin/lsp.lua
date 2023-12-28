@@ -19,6 +19,7 @@ local function filterTypeDTS(value)
 	return string.match(value.filename, "%.d.ts") == nil
 end
 
+-- Onlist filters out DTS files using the above functions
 local function on_list(options)
 	local items = options.items
 	if #items > 1 then
@@ -26,7 +27,7 @@ local function on_list(options)
 	end
 
 	vim.fn.setqflist({}, " ", { title = options.title, items = items, context = options.context })
-	vim.api.nvim_command("cfirst") -- or maybe you want 'copen' instead of 'cfirst'
+	vim.api.nvim_command("cfirst")
 end
 
 -- keybindings
@@ -42,7 +43,6 @@ local on_attach = function(client, bufnr)
 
 	local sort_imports = client.name == "tsserver" or client.name == "biomejs" or client.name == "tailwindcss"
 	if sort_imports then
-		-- biome import sorting
 		vim.keymap.set("n", "<leader>fi", "<cmd>:!~/.local/share/nvim/mason/bin/biome check --apply '%:p'<CR>zz", opts)
 	end
 
