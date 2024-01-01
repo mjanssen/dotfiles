@@ -1,5 +1,9 @@
 vim.opt.guicursor = ""
 
+vim.g.netrw_browse_split = 0
+vim.g.netrw_banner = 0
+vim.g.netrw_winsize = 25
+
 vim.opt.nu = true
 vim.opt.relativenumber = true
 
@@ -29,6 +33,6 @@ vim.opt.isfname:append("@-@")
 vim.opt.updatetime = 50
 
 -- GitBlame
-vim.g.gitblame_date_format = "%c"
+-- vim.g.gitblame_date_format = "%c"
 
 vim.opt.cursorline = true
