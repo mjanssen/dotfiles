@@ -1,38 +1,38 @@
-vim.opt.guicursor = ""
+local o = vim.opt
 
 vim.g.netrw_browse_split = 0
 vim.g.netrw_banner = 0
 vim.g.netrw_winsize = 25
 
-vim.opt.nu = true
-vim.opt.relativenumber = true
+o.guicursor = ""
 
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
+o.nu = true
+o.relativenumber = true
 
-vim.opt.smartindent = true
+o.autoindent = true
+o.smartindent = false
 
-vim.opt.wrap = false
+o.expandtab = false
+o.softtabstop = 4
+o.shiftwidth = 4
+o.tabstop = 4
 
-vim.opt.swapfile = false
-vim.opt.backup = false
-vim.opt.undodir = os.getenv("HOME") .. "/.vim/undodir"
-vim.opt.undofile = true
+o.wrap = false
 
-vim.opt.hlsearch = false
-vim.opt.incsearch = true
+o.swapfile = false
+o.backup = false
+o.undodir = os.getenv("HOME") .. "/.vim/undodir"
+o.undofile = true
 
-vim.opt.termguicolors = true
+o.hlsearch = false
+o.incsearch = true
 
-vim.opt.scrolloff = 8
-vim.opt.signcolumn = "yes"
-vim.opt.isfname:append("@-@")
+o.termguicolors = true
 
-vim.opt.updatetime = 50
+o.scrolloff = 8
+o.signcolumn = "yes"
+o.isfname:append("@-@")
 
--- GitBlame
--- vim.g.gitblame_date_format = "%c"
+o.updatetime = 50
 
-vim.opt.cursorline = true
+o.cursorline = true

@@ -7,9 +7,11 @@ return {
 		opts.sources = {
 			-- TS / JS
 			nls.formatting.biome.with({
+				exe = "biome",
 				args = {
 					"check",
 					"--apply-unsafe",
+					"--jsx-quote-style=double",
 					"--formatter-enabled=true",
 					"--organize-imports-enabled=true",
 					"--skip-errors",

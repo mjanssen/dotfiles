@@ -46,7 +46,7 @@ return {
 			lspconfig.biome.setup({
 				capabilities,
 				cmd = { "biome", "lsp-proxy" },
-				root_dir = lspconfig.util.root_pattern("package.json", "node_modules", ".git", "biome.json"),
+				root_dir = lspconfig.util.root_pattern("package.json", "node_modules", "biome.json"),
 			})
 
 			-- Python
