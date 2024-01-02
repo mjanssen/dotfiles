@@ -1,7 +1,7 @@
 return {
 	"nvimtools/none-ls.nvim",
 	opts = function(_, opts)
-        -- none-ls is actually null-ls under-the-hood
+		-- none-ls is actually null-ls under-the-hood
 		local nls = require("null-ls").builtins
 
 		opts.sources = {
@@ -17,6 +17,11 @@ return {
 				},
 			}),
 			-- Python
+			nls.formatting.black.with({
+				exe = "black",
+				stdin = true,
+				args = { "-q", "-" },
+			}),
 			nls.formatting.ruff.with({
 				exe = "ruff",
 				stdin = true,
