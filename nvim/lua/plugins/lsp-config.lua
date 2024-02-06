@@ -103,13 +103,20 @@ return {
 				settings = {
 					pylsp = {
 						plugins = {
-							plugins = {
-								pycodestyle = {
-									enabled = false,
-								},
-								flake8 = {
-									enabled = false,
-								},
+							pycodestyle = {
+								enabled = false,
+							},
+							flake8 = {
+								enabled = false,
+							},
+							ruff = {
+								enabled = false, -- Mason ruff_lsp
+							},
+							black = {
+								enabled = true,
+							},
+							isort = {
+								enabled = true,
 							},
 						},
 					},

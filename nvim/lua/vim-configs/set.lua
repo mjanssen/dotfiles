@@ -29,6 +29,10 @@ o.incsearch = true
 
 o.termguicolors = true
 
+-- Show spaces
+-- vim.opt.list = true
+-- vim.opt.listchars = "tab:→ ,space:·"
+
 o.scrolloff = 8
 o.signcolumn = "yes"
 o.isfname:append("@-@")

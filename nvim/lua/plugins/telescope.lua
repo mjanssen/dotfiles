@@ -5,7 +5,7 @@ return {
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = function(_, opts)
 			opts.defaults = {
-				file_ignore_patterns = { "^node_modules/" },
+				file_ignore_patterns = { "node_modules/" },
 			}
 		end,
 		config = function()
