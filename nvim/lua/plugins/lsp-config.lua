@@ -45,9 +45,9 @@ return {
 	-- Bridges gap between mason and nvim--lspconfig
 	{
 		"williamboman/mason-lspconfig.nvim",
-        dependencies = {
-            "williamboman/mason.nvim",
-        },
+		dependencies = {
+			"williamboman/mason.nvim",
+		},
 		config = function()
 			require("mason-lspconfig").setup({
 				ensure_installed = {
@@ -55,7 +55,7 @@ return {
 					"tsserver",
 					"biome",
 					"ruff_lsp",
-					"pylsp",
+					"jedi_language_server",
 					"rust_analyzer",
 					"tailwindcss",
 				},
@@ -66,20 +66,25 @@ return {
 	{
 		"neovim/nvim-lspconfig",
 		config = function()
-			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 			local lspconfig = require("lspconfig")
 
 			lspconfig.lua_ls.setup({
-				capabilities,
+				settings = {
+					Lua = {
+						diagnostics = {
+							globals = {
+								"vim",
+							},
+						},
+					},
+				},
 			})
 
 			-- TS / JS
 			lspconfig.tsserver.setup({
-				capabilities,
 				on_attach = disableFmtProvider,
 			})
 			lspconfig.biome.setup({
-				capabilities,
 				cmd = { "biome", "lsp-proxy" },
 				root_dir = lspconfig.util.root_pattern("package.json", "node_modules", "biome.json"),
 			})
@@ -87,7 +92,6 @@ return {
 
 			-- Python
 			lspconfig.ruff_lsp.setup({
-				capabilities,
 				init_options = {
 					settings = {
 						args = {
@@ -97,38 +101,16 @@ return {
 							"F",
 							"--extend-select",
 							"W",
+							"--extend-select",
+							"I",
 						},
 					},
 				},
 			})
-			lspconfig.pylsp.setup({
-				capabilities,
-				settings = {
-					pylsp = {
-						plugins = {
-							pycodestyle = {
-								enabled = false,
-							},
-							flake8 = {
-								enabled = false,
-							},
-							ruff = {
-								enabled = false, -- Mason ruff_lsp
-							},
-							black = {
-								enabled = true,
-							},
-							isort = {
-								enabled = true,
-							},
-						},
-					},
-				},
-			})
+			lspconfig.jedi_language_server.setup({}) -- used only for Go To Definition capabilities
 
 			-- Rust
 			lspconfig.rust_analyzer.setup({
-				capabilities,
 				assist = {
 					importEnforceGranularity = true,
 					importPrefix = "crate",
@@ -166,7 +148,8 @@ return {
 					vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opt)
 					vim.keymap.set({ "n", "v" }, "<C-space>", vim.lsp.buf.code_action, opt)
 					vim.keymap.set("n", "<leader>ff", function()
-						vim.lsp.buf.format({ async = true })
+						require("conform").format({ bufnr = ev.buf })
+						-- vim.lsp.buf.format({ async = false })
 					end, opt)
 				end,
 			})
