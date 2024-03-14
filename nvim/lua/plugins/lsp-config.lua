@@ -109,6 +109,9 @@ return {
 			})
 			lspconfig.jedi_language_server.setup({}) -- used only for Go To Definition capabilities
 
+			-- Gleam
+			lspconfig.gleam.setup({})
+
 			-- Rust
 			lspconfig.rust_analyzer.setup({
 				assist = {
@@ -148,8 +151,7 @@ return {
 					vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opt)
 					vim.keymap.set({ "n", "v" }, "<C-space>", vim.lsp.buf.code_action, opt)
 					vim.keymap.set("n", "<leader>ff", function()
-						require("conform").format({ bufnr = ev.buf })
-						-- vim.lsp.buf.format({ async = false })
+						require("conform").format({ bufnr = ev.buf, lsp_fallback = true })
 					end, opt)
 				end,
 			})
