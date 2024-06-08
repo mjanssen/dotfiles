@@ -19,6 +19,10 @@
       "api_url": "http://localhost:11434/v1"
     }
   },
+  "centered_layout": {
+    "left_padding": 0.2,
+    "right_padding": 0.2
+  },
   "relative_line_numbers": true,
   "theme": "Atelier Cave Dark",
   "buffer_font_size": 13,
