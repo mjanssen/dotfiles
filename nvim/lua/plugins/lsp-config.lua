@@ -55,16 +55,28 @@ return {
 					"tsserver",
 					"biome",
 					"ruff_lsp",
-					"jedi_language_server",
+					"pyright",
 					"rust_analyzer",
 					"tailwindcss",
 				},
 			})
 		end,
 	},
+	{
+		"mrcjkb/rustaceanvim",
+		version = "^4", -- Recommended
+		ft = { "rust" },
+	},
 	-- Setup lsp keymaps
 	{
 		"neovim/nvim-lspconfig",
+		opts = {
+			setup = {
+				rust_analyzer = function()
+					return true
+				end,
+			},
+		},
 		config = function()
 			local lspconfig = require("lspconfig")
 
@@ -103,32 +115,98 @@ return {
 							"W",
 							"--extend-select",
 							"I",
+							"--extend-select",
+							"F401", -- unused imports
 						},
 					},
 				},
 			})
-			lspconfig.jedi_language_server.setup({}) -- used only for Go To Definition capabilities
+			lspconfig.pyright.setup({ -- Go To Definition capabilities
+				settings = {
+					pyright = {
+						disableOrganizeImports = true,
+					},
+					python = {
+						analysis = {
+							ignore = { "*" },
+						},
+					},
+				},
+			})
 
 			-- Gleam
 			lspconfig.gleam.setup({})
 
+			-- Golang
+			lspconfig.gopls.setup({})
+
 			-- Rust
-			lspconfig.rust_analyzer.setup({
-				assist = {
-					importEnforceGranularity = true,
-					importPrefix = "crate",
-				},
-				cargo = {
-					allFeatures = true,
-				},
-				inlayHints = { locationLinks = false },
-				diagnostics = {
-					enable = true,
-					experimental = {
-						enable = true,
+			--
+			-- others lsp settings. --
+			vim.g.rustaceanvim = function()
+				return {
+					-- other rustacean settings. --
+					server = {
+						on_attach = function()
+							-- Hide semantic highlights for functions
+							vim.api.nvim_set_hl(0, "@lsp.type.function", {})
+							-- Hide all semantic highlights
+							for _, group in ipairs(vim.fn.getcompletion("@lsp", "highlight")) do
+								vim.api.nvim_set_hl(0, group, {})
+							end
+
+							vim.keymap.set("n", "K", function()
+								vim.cmd.RustLsp({ "hover", "actions" })
+							end, { buffer = bufnr })
+							-- other settings. --
+						end,
 					},
-				},
-			})
+					default_settings = {
+						-- rust-analyzer language server configuration
+						["rust-analyzer"] = {
+							cargo = {
+								allFeatures = true,
+								loadOutDirsFromCheck = true,
+								runBuildScripts = true,
+							},
+							-- Add clippy lints for Rust.
+							checkOnSave = {
+								allFeatures = true,
+								command = "clippy",
+								extraArgs = { "--no-deps" },
+							},
+							procMacro = {
+								enable = true,
+								ignored = {
+									["async-trait"] = { "async_trait" },
+									["napi-derive"] = { "napi" },
+									["async-recursion"] = { "async_recursion" },
+								},
+							},
+						},
+					},
+				}
+			end
+
+			-- lspconfig.rust_analyzer.setup({})
+
+			-- Rust
+			-- lspconfig.rust_analyzer.setup({
+			-- 	assist = {
+			-- 		importEnforceGranularity = true,
+			-- 		importPrefix = "crate",
+			-- 	},
+			-- 	cargo = {
+			-- 		allFeatures = true,
+			-- 	},
+			-- 	inlayHints = { locationLinks = false },
+			-- 	diagnostics = {
+			-- 		enable = true,
+			-- 		experimental = {
+			-- 			enable = true,
+			-- 		},
+			-- 	},
+			-- })
 
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("UserLspConfig", {}),

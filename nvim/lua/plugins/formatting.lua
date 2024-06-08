@@ -17,7 +17,7 @@ return {
 			typescript = { "biome" },
 			typescriptreact = { "biome" },
 			sql = { "sqlfluff" },
-			python = { "isort", "ruff_format" },
+			python = { "ruff_format", "isort" },
 		}
 	end,
 }
