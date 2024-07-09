@@ -36,6 +36,9 @@ vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><
 -- copy file in filetree
 vim.keymap.set("n", "<leader>cad", "<cmd>:!cp '%:p' '%:p:h/%:t:r-copy.%:e'<CR>")
 
+-- filetree
+vim.keymap.set("n", "<leader>ft", "<cmd>:Neotree toggle<CR>")
+
 -- Trouble
 vim.keymap.set("n", "<leader>xx", function()
 	require("trouble").toggle()

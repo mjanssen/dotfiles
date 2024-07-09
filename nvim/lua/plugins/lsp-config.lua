@@ -62,11 +62,6 @@ return {
 			})
 		end,
 	},
-	{
-		"mrcjkb/rustaceanvim",
-		version = "^4", -- Recommended
-		ft = { "rust" },
-	},
 	-- Setup lsp keymaps
 	{
 		"neovim/nvim-lspconfig",
@@ -141,72 +136,30 @@ return {
 			lspconfig.gopls.setup({})
 
 			-- Rust
-			--
-			-- others lsp settings. --
-			vim.g.rustaceanvim = function()
-				return {
-					-- other rustacean settings. --
-					server = {
-						on_attach = function()
-							-- Hide semantic highlights for functions
-							vim.api.nvim_set_hl(0, "@lsp.type.function", {})
-							-- Hide all semantic highlights
-							for _, group in ipairs(vim.fn.getcompletion("@lsp", "highlight")) do
-								vim.api.nvim_set_hl(0, group, {})
-							end
-
-							vim.keymap.set("n", "K", function()
-								vim.cmd.RustLsp({ "hover", "actions" })
-							end, { buffer = bufnr })
-							-- other settings. --
-						end,
-					},
-					default_settings = {
-						-- rust-analyzer language server configuration
-						["rust-analyzer"] = {
-							cargo = {
-								allFeatures = true,
-								loadOutDirsFromCheck = true,
-								runBuildScripts = true,
+			-- https://rust-analyzer.github.io/manual.html
+			lspconfig.rust_analyzer.setup({
+				on_attach = function(client, bufnr)
+					vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+				end,
+				settings = {
+					["rust-analyzer"] = {
+						imports = {
+							granularity = {
+								group = "module",
 							},
-							-- Add clippy lints for Rust.
-							checkOnSave = {
-								allFeatures = true,
-								command = "clippy",
-								extraArgs = { "--no-deps" },
-							},
-							procMacro = {
+							prefix = "self",
+						},
+						cargo = {
+							buildScripts = {
 								enable = true,
-								ignored = {
-									["async-trait"] = { "async_trait" },
-									["napi-derive"] = { "napi" },
-									["async-recursion"] = { "async_recursion" },
-								},
 							},
 						},
+						procMacro = {
+							enable = true,
+						},
 					},
-				}
-			end
-
-			-- lspconfig.rust_analyzer.setup({})
-
-			-- Rust
-			-- lspconfig.rust_analyzer.setup({
-			-- 	assist = {
-			-- 		importEnforceGranularity = true,
-			-- 		importPrefix = "crate",
-			-- 	},
-			-- 	cargo = {
-			-- 		allFeatures = true,
-			-- 	},
-			-- 	inlayHints = { locationLinks = false },
-			-- 	diagnostics = {
-			-- 		enable = true,
-			-- 		experimental = {
-			-- 			enable = true,
-			-- 		},
-			-- 	},
-			-- })
+				},
+			})
 
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("UserLspConfig", {}),

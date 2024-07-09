@@ -1,6 +1,7 @@
 {
   "features": {
-    "copilot": false
+    "copilot": false,
+    "inline_completion_provider": "copilot"
   },
   "assistant": {
     "version": "1",
@@ -15,11 +16,56 @@
     "left_padding": 0.2,
     "right_padding": 0.2
   },
+  "formatter": "language_server",
+  "code_actions_on_format": {
+    "source.fixAll": true,
+    "source.organizeImports.biome": true
+  },
+  "format_on_save": "on",
   "relative_line_numbers": true,
   "theme": "Atelier Cave Dark",
   "buffer_font_size": 13,
   "vim_mode": true,
-  "language_overrides": {
+  "languages": {
+    "TSX": {
+      "formatter": {
+        "external": {
+          "command": "./node_modules/@biomejs/biome/bin/biome",
+          "arguments": [
+            "format",
+            "--write",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      }
+    },
+    "TypeScript": {
+      "formatter": {
+        "external": {
+          "command": "./node_modules/@biomejs/biome/bin/biome",
+          "arguments": [
+            "format",
+            "--write",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      }
+    },
+    "JavaScript": {
+      "formatter": {
+        "external": {
+          "command": "./node_modules/@biomejs/biome/bin/biome",
+          "arguments": [
+            "format",
+            "--write",
+            "--stdin-file-path",
+            "{buffer_path}"
+          ]
+        }
+      }
+    },
     "Python": {
       "format_on_save": "on",
       "formatter": {
