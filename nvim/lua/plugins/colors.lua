@@ -1,5 +1,13 @@
+function Lightmode()
+	Color("tokyonight-day")
+end
+
+function Darkmode()
+	Color("kanagawa-wave")
+end
+
 function Color(color)
-	color = color or "rose-pine"
+	color = color or "kanagawa-wave"
 	vim.cmd.colorscheme(color)
 
 	vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
@@ -11,23 +19,16 @@ return {
 		"folke/tokyonight.nvim",
 		config = function()
 			require("tokyonight").setup({
-				-- your configuration comes here
-				-- or leave it empty to use the default settings
-				style = "storm", -- The theme comes in three styles, `storm`, `moon`, a darker variant `night` and `day`
-				transparent = true, -- Enable this to disable setting the background color
-				terminal_colors = true, -- Configure the colors used when opening a `:terminal` in Neovim
+				style = "storm", -- `storm`, `moon`, a darker variant `night` and `day`
+				transparent = true,
+				terminal_colors = true,
 				styles = {
-					-- Style to be applied to different syntax groups
-					-- Value is any valid attr-list value for `:help nvim_set_hl`
 					comments = { italic = false },
 					keywords = { italic = false },
-					-- Background styles. Can be "dark", "transparent" or "normal"
-					sidebars = "dark", -- style for sidebars, see below
-					floats = "dark", -- style for floating windows
+					sidebars = "dark",
+					floats = "dark",
 				},
 			})
-
-			-- Color("tokyonight-moon")
 		end,
 	},
 	{
@@ -41,8 +42,6 @@ return {
 					italic = false,
 				},
 			})
-
-			-- Color("rose-pine")
 		end,
 	},
 	{
@@ -56,9 +55,10 @@ return {
 				keywordStyle = { italic = false },
 				statementStyle = { bold = false },
 				typeStyle = {},
-				transparent = false,
+				transparent = true,
 				dimInactive = false,
 				terminalColors = true,
+				background = "none",
 				colors = {
 					palette = {},
 					theme = {
@@ -72,12 +72,7 @@ return {
 						},
 					},
 				},
-				background = {},
 			})
-
-			Color("kanagawa-wave")
-			--
-			-- Color("atelierdark")
 		end,
 	},
 }

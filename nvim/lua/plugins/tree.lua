@@ -21,6 +21,10 @@ return {
 						".cargo",
 					},
 				},
+				follow_current_file = {
+					enabled = true,
+					leave_dirs_open = false,
+				},
 			},
 			git_status = {
 				symbols = {

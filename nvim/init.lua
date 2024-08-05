@@ -16,7 +16,13 @@ end
 
 vim.opt.rtp:prepend(lazypath)
 
-require("lazy").setup("plugins")
+require("lazy").setup({ import = "plugins" }, {
+	change_detection = {
+		notify = false,
+	},
+})
 
 -- Init vim configuration (remaps, sets etc...)
 require("vim-configs")
+
+Color()
