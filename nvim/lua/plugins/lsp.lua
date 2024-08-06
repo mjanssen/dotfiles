@@ -52,7 +52,9 @@ return {
 						semanticTokensProvider = vim.NIL,
 					},
 				},
+
 				rust_analyzer = true,
+
 				pyright = {
 					settings = {
 						pyright = {
@@ -61,6 +63,24 @@ return {
 						python = {
 							analysis = {
 								ignore = { "*" },
+							},
+						},
+					},
+				},
+				ruff_lsp = {
+					init_options = {
+						settings = {
+							args = {
+								"--extend-select",
+								"E",
+								"--extend-select",
+								"F",
+								"--extend-select",
+								"W",
+								"--extend-select",
+								"I",
+								"--extend-select",
+								"F401", -- unused imports
 							},
 						},
 					},
