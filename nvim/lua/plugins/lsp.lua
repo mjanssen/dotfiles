@@ -205,7 +205,7 @@ return {
 				formatters_by_ft = {
 					lua = { "stylua" },
 					sql = { "sqlfluff" },
-					python = { "ruff_format", "ruff_organize_imports", "ruff_fix" },
+					python = { "ruff_organize_imports" },
 				},
 			})
 
