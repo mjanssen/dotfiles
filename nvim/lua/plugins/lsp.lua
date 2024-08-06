@@ -189,8 +189,23 @@ return {
 
 			-- Autoformatting Setup with Conform
 			require("conform").setup({
+				formatters = {
+					sqlfluff = {
+						command = "sqlfluff",
+						stdin = true,
+						args = {
+							"format",
+							"--dialect",
+							"redshift",
+							"--config",
+							"/Users/" .. (os.getenv("USER") or os.getenv("USERNAME")) .. "/.config/.sqlfluff",
+							"-",
+						},
+					},
+				},
 				formatters_by_ft = {
 					lua = { "stylua" },
+					sql = { "sqlfluff" },
 				},
 			})
 
