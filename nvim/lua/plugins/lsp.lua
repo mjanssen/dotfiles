@@ -119,7 +119,6 @@ return {
 				"stylua",
 				"lua_ls",
 				"tailwindcss-language-server",
-				"isort",
 			}
 
 			vim.list_extend(ensure_installed, servers_to_install)
