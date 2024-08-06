@@ -118,17 +118,7 @@ return {
 			local ensure_installed = {
 				"stylua",
 				"lua_ls",
-				"bash-language-server",
-				"biome",
-				"gopls",
-				"json-lsp",
-				"pyright",
-				"python-lsp-server",
-				"ruff-lsp",
-				"rust-analyzer",
-				"sqlls",
 				"tailwindcss-language-server",
-				"typescript-language-server",
 			}
 
 			vim.list_extend(ensure_installed, servers_to_install)
