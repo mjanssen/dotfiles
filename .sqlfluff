@@ -1,0 +1,55 @@
+[sqlfluff]
+dialect = redshift
+templater = jinja
+max_line_length = 80
+indent_unit = space
+large_file_skip_char_limit = 0
+large_file_skip_byte_limit = 0
+
+[sqlfluff:templater]
+unwrap_wrapped_queries = True
+
+[sqlfluff:templater:jinja]
+apply_dbt_builtins = True
+
+[sqlfluff:layout:type:comma]
+spacing_before = touch
+line_position = trailing
+
+[sqlfluff:indentation]
+tab_space_size = 4
+indented_joins = False
+indented_using_on = True
+template_blocks_indent = False
+indented_on_contents = True
+allow_implicit_indents = True
+
+[sqlfluff:layout:type:from_clause]
+line_position = trailing
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+[sqlfluff:rules:aliasing.table]
+aliasing = explicit
+
+[sqlfluff:rules:aliasing.column]
+aliasing = explicit
+
+[sqlfluff:rules:aliasing.expression]
+allow_scalar = False
+
+[sqlfluff:rules:capitalisation.identifiers]
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.types]
+extended_capitalisation_policy = upper
+
+[sqlfluff:rules:ambiguous.column_references]  # Names (not numbers) in group by
+group_by_and_order_by_style = explicit
