@@ -119,6 +119,7 @@ return {
 				"stylua",
 				"lua_ls",
 				"tailwindcss-language-server",
+				"isort",
 			}
 
 			vim.list_extend(ensure_installed, servers_to_install)
@@ -205,6 +206,7 @@ return {
 				formatters_by_ft = {
 					lua = { "stylua" },
 					sql = { "sqlfluff" },
+					python = { "ruff_format", "isort" },
 				},
 			})
 
