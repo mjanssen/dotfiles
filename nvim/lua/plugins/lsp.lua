@@ -118,8 +118,17 @@ return {
 			local ensure_installed = {
 				"stylua",
 				"lua_ls",
-				"delve",
+				"bash-language-server",
+				"biome",
+				"gopls",
+				"json-lsp",
+				"pyright",
+				"python-lsp-server",
+				"ruff-lsp",
+				"rust-analyzer",
+				"sqlls",
 				"tailwindcss-language-server",
+				"typescript-language-server",
 			}
 
 			vim.list_extend(ensure_installed, servers_to_install)
@@ -223,140 +232,6 @@ return {
 			-- Floating LSP help lines
 			require("lsp_lines").setup()
 			vim.diagnostic.config({ virtual_text = false, virtual_lines = true })
-			-- local lspconfig = require("lspconfig")
-
-			-- local function disableFmtProvider(client, bufnr)
-			-- 	if client.server_capabilities.documentSymbolProvider then
-			-- 		navic.attach(client, bufnr)
-			-- 	end
-
-			-- 	-- Let Conform handle formatting
-			-- 	client.server_capabilities.documentFormattingProvider = false
-			-- end
-
-			-- lspconfig.lua_ls.setup({
-			-- 	settings = {
-			-- 		Lua = {
-			-- 			diagnostics = {
-			-- 				globals = {
-			-- 					"vim",
-			-- 				},
-			-- 			},
-			-- 		},
-			-- 	},
-			-- })
-
-			-- -- TS / JS
-			-- lspconfig.tsserver.setup({
-			-- 	on_attach = disableFmtProvider,
-			-- })
-			-- lspconfig.biome.setup({
-			-- 	cmd = { "biome", "lsp-proxy" },
-			-- 	root_dir = lspconfig.util.root_pattern("package.json", "node_modules", "biome.json"),
-			-- })
-			-- lspconfig.tailwindcss.setup({})
-
-			-- -- Python
-			-- lspconfig.ruff_lsp.setup({
-			-- 	init_options = {
-			-- 		settings = {
-			-- 			args = {
-			-- 				"--extend-select",
-			-- 				"E",
-			-- 				"--extend-select",
-			-- 				"F",
-			-- 				"--extend-select",
-			-- 				"W",
-			-- 				"--extend-select",
-			-- 				"I",
-			-- 				"--extend-select",
-			-- 				"F401", -- unused imports
-			-- 			},
-			-- 		},
-			-- 	},
-			-- })
-
-			-- lspconfig.pyright.setup({
-			-- 	settings = {
-			-- 		pyright = {
-			-- 			disableOrganizeImports = true,
-			-- 		},
-			-- 		python = {
-			-- 			analysis = {
-			-- 				ignore = { "*" },
-			-- 			},
-			-- 		},
-			-- 	},
-			-- })
-
-			-- -- Golang
-			-- lspconfig.gopls.setup({})
-
-			-- -- Rust
-			-- lspconfig.rust_analyzer.setup({
-			-- 	on_attach = function(client, bufnr)
-			-- 		vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-			-- 	end,
-			-- 	settings = {
-			-- 		["rust-analyzer"] = {
-			-- 			imports = {
-			-- 				granularity = {
-			-- 					group = "module",
-			-- 				},
-			-- 				prefix = "self",
-			-- 			},
-			-- 			cargo = {
-			-- 				buildScripts = {
-			-- 					enable = true,
-			-- 				},
-			-- 			},
-			-- 			procMacro = {
-			-- 				enable = true,
-			-- 			},
-			-- 		},
-			-- 	},
-			-- })
-
-			-- vim.api.nvim_create_autocmd("LspAttach", {
-			-- 	group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-			-- 	callback = function(ev)
-			-- 		vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
-
-			-- 		local opt = { buffer = ev.buf }
-
-			-- 		vim.keymap.set("n", "gr", vim.lsp.buf.references, opt)
-			-- 		vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opt)
-			-- 		vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, opt)
-
-			-- 		-- Strip out node_module suggestions
-			-- 		vim.keymap.set("n", "gd", function()
-			-- 			vim.lsp.buf.definition({ on_list = on_list })
-			-- 		end, opt)
-
-			-- 		vim.keymap.set("n", "K", vim.lsp.buf.hover, opt)
-			-- 		vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opt)
-			-- 		vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opt)
-			-- 		vim.keymap.set({ "n", "v" }, "<C-space>", vim.lsp.buf.code_action, opt)
-			-- 		vim.keymap.set("n", "<leader>ff", function()
-			-- 			require("conform").format({ bufnr = ev.buf, lsp_fallback = true })
-			-- 		end, opt)
-			-- 	end,
-			-- })
-
-			-- -- borders around hover window
-			-- local _border = "rounded"
-
-			-- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-			-- 	border = _border,
-			-- })
-
-			-- vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-			-- 	border = _border,
-			-- })
-
-			-- vim.diagnostic.config({
-			-- 	float = { border = _border },
-			-- })
 		end,
 	},
 }
