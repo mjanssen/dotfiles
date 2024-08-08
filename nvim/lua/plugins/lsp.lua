@@ -92,7 +92,10 @@ return {
 						documentFormattingProvider = false,
 					},
 				},
-				biome = true,
+				biome = {
+					cmd = { "biome", "lsp-proxy" },
+					root_dir = lspconfig.util.root_pattern("package.json", "node_modules", "biome.json"),
+				},
 				tailwindcss = true,
 
 				jsonls = {
