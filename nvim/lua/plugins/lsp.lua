@@ -25,6 +25,7 @@ return {
 
 			local servers = {
 				bashls = true,
+
 				gopls = {
 					settings = {
 						gopls = {
@@ -40,6 +41,7 @@ return {
 						},
 					},
 				},
+
 				lua_ls = {
 					settings = {
 						Lua = {
