@@ -1,16 +1,20 @@
 {
+  "language_models": {
+    "openai": {
+      "api_url": "http://localhost:11434/v1"
+    }
+  },
   "features": {
     "copilot": false,
     "inline_completion_provider": "copilot"
   },
   "assistant": {
-    "version": "1",
-    "provider": {
-      "name": "openai",
-      "type": "openai",
-      "default_model": "gpt-4-turbo-preview",
-      "api_url": "http://localhost:11434/v1"
-    }
+    "default_model": {
+      "provider": "openai",
+      "model": "gpt-4-turbo-preview"
+    },
+    "version": "2",
+    "provider": null
   },
   "centered_layout": {
     "left_padding": 0.2,
