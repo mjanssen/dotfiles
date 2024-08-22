@@ -225,9 +225,9 @@ return {
 				end,
 			})
 
-			-- Floating LSP help lines
-			require("lsp_lines").setup()
-			vim.diagnostic.config({ virtual_text = false, virtual_lines = true })
+			-- Floating LSP help lines > moves the file content a tad too much
+			-- require("lsp_lines").setup()
+			-- vim.diagnostic.config({ virtual_text = false, virtual_lines = true })
 		end,
 	},
 }

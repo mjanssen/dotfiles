@@ -1,6 +1,7 @@
 {
   "language_models": {
     "openai": {
+      "version": "1",
       "api_url": "http://localhost:11434/v1"
     }
   },
