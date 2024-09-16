@@ -10,11 +10,13 @@ ln -s $HOME/.config/dotfiles/kitty $HOME/.config/kitty
 ```
 
 installs
-- brew: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-- nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"`
-- rust: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"`
+* brew: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+* nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"`
+* rust: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"`
 
-- cp .zshrc: `cp $HOME/.config/dotfiles/.zshrc $HOME/.zshrc`
+* cp .zshrc: `cp $HOME/.config/dotfiles/.zshrc $HOME/.zshrc`
+
+`source ~/.zshrc`
 
 commands
 ```
