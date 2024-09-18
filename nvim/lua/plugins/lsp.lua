@@ -73,7 +73,7 @@ return {
 				},
 
 				-- Disable formatting provider since we're using biome
-				tsserver = {
+				ts_ls = {
 					server_capabilities = {
 						documentFormattingProvider = false,
 					},
