@@ -26,22 +26,6 @@ return {
 			local servers = {
 				bashls = true,
 
-				gopls = {
-					settings = {
-						gopls = {
-							hints = {
-								assignVariableTypes = true,
-								compositeLiteralFields = true,
-								compositeLiteralTypes = true,
-								constantValues = true,
-								functionTypeParameters = true,
-								parameterNames = true,
-								rangeVariableTypes = true,
-							},
-						},
-					},
-				},
-
 				lua_ls = {
 					settings = {
 						Lua = {
@@ -89,7 +73,7 @@ return {
 				},
 
 				-- Disable formatting provider since we're using biome
-				tsserver = {
+				ts_ls = {
 					server_capabilities = {
 						documentFormattingProvider = false,
 					},

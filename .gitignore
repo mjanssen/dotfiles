@@ -1,5 +1,8 @@
 .DS_Store
 
+kitty/kitty.conf.bak
+kitty/current-theme.conf
+
 configstore
 fontforge
 gdrive3
