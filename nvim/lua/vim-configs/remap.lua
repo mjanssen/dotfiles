@@ -23,6 +23,7 @@ vim.keymap.set("n", "<leader>Y", [["+Y]])
 -- Git Blame
 vim.keymap.set("n", "<Leader>bt", "<cmd>GitBlameToggle<cr>")
 vim.keymap.set("n", "<Leader>bo", "<cmd>GitBlameOpenCommitURL<cr>")
+vim.keymap.set("n", "<Leader>bf", "<cmd>GitBlameOpenFileURL<cr>")
 
 -- quickfix list
 vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")

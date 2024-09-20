@@ -6,8 +6,8 @@ return {
 			"williamboman/mason-lspconfig.nvim",
 			"WhoIsSethDaniel/mason-tool-installer.nvim",
 
+			-- Top bar filename
 			{ "j-hui/fidget.nvim", opts = {} },
-			{ "https://git.sr.ht/~whynothugo/lsp_lines.nvim" },
 
 			-- Autoformatting
 			"stevearc/conform.nvim",
@@ -69,7 +69,7 @@ return {
 						},
 					},
 				},
-				ruff_lsp = {
+				ruff = {
 					init_options = {
 						settings = {
 							args = {
@@ -123,6 +123,7 @@ return {
 			local ensure_installed = {
 				"stylua",
 				"lua_ls",
+				"ruff",
 				"tailwindcss-language-server",
 			}
 
@@ -206,11 +207,30 @@ return {
 							"-",
 						},
 					},
+					ruff_organize_imports = {
+						command = "ruff",
+						args = {
+							"check",
+							"--force-exclude",
+							"--select=I001",
+							"--fix",
+							"--exit-zero",
+							"--stdin-filename",
+							"$FILENAME",
+							"-",
+						},
+						stdin = true,
+						cwd = require("conform.util").root_file({
+							"pyproject.toml",
+							"ruff.toml",
+							".ruff.toml",
+						}),
+					},
 				},
 				formatters_by_ft = {
 					lua = { "stylua" },
 					sql = { "sqlfluff" },
-					python = { "ruff_organize_imports" },
+					python = { "ruff_format", "ruff_organize_imports" },
 				},
 			})
 
@@ -224,10 +244,6 @@ return {
 					})
 				end,
 			})
-
-			-- Floating LSP help lines > moves the file content a tad too much
-			-- require("lsp_lines").setup()
-			-- vim.diagnostic.config({ virtual_text = false, virtual_lines = true })
 		end,
 	},
 }
