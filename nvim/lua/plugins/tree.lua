@@ -40,6 +40,11 @@ return {
 				},
 				align = "right",
 			},
+			window = {
+				mappings = {
+					["<bs>"] = "",
+				},
+			},
 		})
 	end,
 }
