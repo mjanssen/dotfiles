@@ -26,6 +26,8 @@ return {
 			local servers = {
 				bashls = true,
 
+				html = true,
+
 				lua_ls = {
 					settings = {
 						Lua = {
