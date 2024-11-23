@@ -97,6 +97,8 @@ return {
 						},
 					},
 				},
+
+				terraformls = true,
 			}
 
 			local servers_to_install = vim.tbl_filter(function(key)
@@ -220,6 +222,7 @@ return {
 					lua = { "stylua" },
 					sql = { "sqlfluff" },
 					python = { "ruff_format", "ruff_organize_imports" },
+					json = { "biome" },
 				},
 			})
 
