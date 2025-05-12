@@ -24,10 +24,6 @@ return {
 			local lspconfig = require("lspconfig")
 
 			local servers = {
-				bashls = true,
-
-				html = true,
-
 				lua_ls = {
 					settings = {
 						Lua = {
@@ -55,24 +51,6 @@ return {
 						},
 					},
 				},
-				ruff = {
-					init_options = {
-						settings = {
-							args = {
-								"--extend-select",
-								"E",
-								"--extend-select",
-								"F",
-								"--extend-select",
-								"W",
-								"--extend-select",
-								"I",
-								"--extend-select",
-								"F401", -- unused imports
-							},
-						},
-					},
-				},
 
 				-- Disable formatting provider since we're using biome
 				ts_ls = {
@@ -84,21 +62,6 @@ return {
 					cmd = { "biome", "lsp-proxy" },
 					root_dir = lspconfig.util.root_pattern("package.json", "node_modules", "biome.json"),
 				},
-				tailwindcss = true,
-
-				jsonls = {
-					settings = {
-						json = {
-							format = {
-								enable = false,
-							},
-							schemas = require("schemastore").json.schemas(),
-							validate = { enable = true },
-						},
-					},
-				},
-
-				terraformls = true,
 			}
 
 			local servers_to_install = vim.tbl_filter(function(key)
@@ -110,12 +73,26 @@ return {
 				end
 			end, vim.tbl_keys(servers))
 
-			require("mason").setup()
+			require("mason").setup({
+				ui = {
+					icons = {
+						package_installed = "✓",
+						package_pending = "➜",
+						package_uninstalled = "✗",
+					},
+				},
+			})
+
 			local ensure_installed = {
+				"tailwindcss",
+				"yamlls",
+				"astro",
+				"terraformls",
+				"gopls",
 				"stylua",
-				"lua_ls",
+				"bashls",
+				"html",
 				"ruff",
-				"tailwindcss-language-server",
 			}
 
 			vim.list_extend(ensure_installed, servers_to_install)
@@ -223,6 +200,7 @@ return {
 					sql = { "sqlfluff" },
 					python = { "ruff_format", "ruff_organize_imports" },
 					json = { "biome" },
+					astro = { "biome" },
 				},
 			})
 
