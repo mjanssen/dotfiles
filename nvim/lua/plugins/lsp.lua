@@ -14,6 +14,10 @@ return {
 
 			-- Schema information
 			"b0o/SchemaStore.nvim",
+			{
+				"mrcjkb/rustaceanvim",
+				version = "^6",
+			},
 		},
 		config = function()
 			local capabilities = nil
@@ -37,7 +41,104 @@ return {
 					},
 				},
 
-				rust_analyzer = true,
+				-- rust_analyzer = {
+				-- 	settings = {
+				-- 		-- Enable all features for monorepo support
+				-- 		cargo = {
+				-- 			buildScripts = {
+				-- 				enable = true,
+				-- 			},
+				-- 			-- Load all targets (important for monorepos)
+				-- 			allTargets = true,
+				-- 			-- Use workspace root
+				-- 			loadOutDirsFromCheck = true,
+				-- 			-- Enable features for all crates
+				-- 			features = "all",
+				-- 		},
+				-- 		-- Enhanced diagnostics
+				-- 		diagnostics = {
+				-- 			enable = true,
+				-- 			enableExperimental = true,
+				-- 			-- Show diagnostics for disabled code
+				-- 			disabled = {},
+				-- 		},
+				-- 		-- Improved checking
+				-- 		check = {
+				-- 			command = "clippy",
+				-- 			allTargets = true,
+				-- 			features = "all",
+				-- 			extraArgs = { "--all", "--", "-W", "clippy::all" },
+				-- 		},
+				-- 		-- Better proc macro support
+				-- 		procMacro = {
+				-- 			enable = true,
+				-- 			ignored = {},
+				-- 		},
+				-- 		-- Workspace symbol search
+				-- 		workspace = {
+				-- 			symbol = {
+				-- 				search = {
+				-- 					scope = "workspace_and_dependencies",
+				-- 				},
+				-- 			},
+				-- 		},
+				-- 		-- Import resolution
+				-- 		imports = {
+				-- 			granularity = {
+				-- 				group = "module",
+				-- 			},
+				-- 			prefix = "self",
+				-- 		},
+				-- 		-- Lens settings
+				-- 		lens = {
+				-- 			enable = true,
+				-- 			run = {
+				-- 				enable = true,
+				-- 			},
+				-- 			debug = {
+				-- 				enable = true,
+				-- 			},
+				-- 			implementations = {
+				-- 				enable = true,
+				-- 			},
+				-- 			references = {
+				-- 				adt = {
+				-- 					enable = true,
+				-- 				},
+				-- 				enumVariant = {
+				-- 					enable = true,
+				-- 				},
+				-- 				method = {
+				-- 					enable = true,
+				-- 				},
+				-- 				trait = {
+				-- 					enable = true,
+				-- 				},
+				-- 			},
+				-- 		},
+				-- 		-- Hover actions
+				-- 		hover = {
+				-- 			actions = {
+				-- 				enable = true,
+				-- 			},
+				-- 		},
+				-- 	},
+				-- 	-- Ensure proper root directory detection for monorepos
+				-- 	root_dir = function(fname)
+				-- 		local cargo_crate_dir = lspconfig.util.root_pattern("Cargo.toml")(fname)
+				-- 		local cargo_workspace_dir =
+				-- 			lspconfig.util.root_pattern("Cargo.lock", "rust-project.json")(fname)
+				-- 		return cargo_workspace_dir or cargo_crate_dir
+				-- 	end,
+				-- 	-- Add environment variables if needed
+				-- 	cmd = {
+				-- 		"rust-analyzer",
+				-- 	},
+				-- 	-- Set initialization options
+				-- 	init_options = {
+				-- 		lspMux = nil,
+				-- 	},
+				-- },
 
 				pyright = {
 					settings = {
@@ -58,10 +159,19 @@ return {
 						documentFormattingProvider = false,
 					},
 				},
+
+				prettierd = {
+					root_dir = lspconfig.util.root_pattern("package.json", "node_modules", ".prettierrc.json"),
+				},
+
 				biome = {
 					cmd = { "biome", "lsp-proxy" },
 					root_dir = lspconfig.util.root_pattern("package.json", "node_modules", "biome.json"),
+					workspace_required = true,
 				},
+
+				tailwindcss = true,
+				astro = true,
 			}
 
 			local servers_to_install = vim.tbl_filter(function(key)
@@ -84,15 +194,15 @@ return {
 			})
 
 			local ensure_installed = {
-				"tailwindcss",
+				"tailwindcss-language-server",
 				"yamlls",
 				"astro",
 				"terraformls",
-				"gopls",
 				"stylua",
 				"bashls",
 				"html",
 				"ruff",
+				"rust-analyzer",
 			}
 
 			vim.list_extend(ensure_installed, servers_to_install)
@@ -163,18 +273,6 @@ return {
 			-- Autoformatting Setup with Conform
 			require("conform").setup({
 				formatters = {
-					sqlfluff = {
-						command = "sqlfluff",
-						stdin = true,
-						args = {
-							"format",
-							"--dialect",
-							"redshift",
-							"--config",
-							"/Users/" .. (os.getenv("USER") or os.getenv("USERNAME")) .. "/.config/.sqlfluff",
-							"-",
-						},
-					},
 					ruff_organize_imports = {
 						command = "ruff",
 						args = {
@@ -199,8 +297,12 @@ return {
 					lua = { "stylua" },
 					sql = { "sqlfluff" },
 					python = { "ruff_format", "ruff_organize_imports" },
-					json = { "biome" },
-					astro = { "biome" },
+					json = { "biome-check" },
+					javascript = { "biome-check" },
+					javascriptreact = { "biome-check" },
+					typescript = { "biome-check" },
+					typescriptreact = { "biome-check" },
+					astro = { "prettierd" },
 				},
 			})
 
