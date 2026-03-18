@@ -1,0 +1,12 @@
+cursor-style = block
+macos-titlebar-style = hidden
+
+window-padding-y = 20,2
+window-padding-x = 40
+
+background-opacity = 1
+background = #000000
+background-image = ./sekiro-bnw.png
+background-image-opacity = 1
+background-image-position = center
+background-image-fit = none
