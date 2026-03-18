@@ -4,7 +4,6 @@ return {
 		dependencies = {
 			"williamboman/mason.nvim",
 			"williamboman/mason-lspconfig.nvim",
-			"WhoIsSethDaniel/mason-tool-installer.nvim",
 
 			-- Top bar filename
 			{ "j-hui/fidget.nvim", opts = {} },
@@ -15,8 +14,46 @@ return {
 			-- Schema information
 			"b0o/SchemaStore.nvim",
 			{
+				-- This plugin requires rust-analyzer to be installed. Rustup is the way to go here:
+				-- > rustup component add rust-analyzer
+				-- From the author:
+				-- "I strongly recommend against using rust-analyzer managed by mason.nvim, as version mismatches between
+				-- rust-analyzer and your project toolchain can and most likely will lead to subtle issues."
 				"mrcjkb/rustaceanvim",
 				version = "^6",
+				lazy = false,
+				init = function()
+					vim.g.rustaceanvim = {
+						server = {
+							default_settings = {
+								["rust-analyzer"] = {
+									-- Disable cache priming to save RAM
+									cachePriming = {
+										enable = false,
+									},
+									-- Don't eagerly load all feature flags
+									cargo = {
+										allFeatures = false,
+									},
+									-- The boolean toggle
+									checkOnSave = true,
+									-- The actual command configuration
+									check = {
+										command = "clippy",
+									},
+
+									-- This check command COULD be implemented, but will spike the CPU on save. No bueno
+									-- check = {
+									--     command = "clippy",
+									--     allTargets = true,
+									--     features = "all",
+									--     extraArgs = { "--all", "--", "-W", "clippy::all" },
+									-- },
+								},
+							},
+						},
+					}
+				end,
 			},
 		},
 		config = function()
@@ -25,8 +62,7 @@ return {
 				capabilities = require("cmp_nvim_lsp").default_capabilities()
 			end
 
-			local lspconfig = require("lspconfig")
-
+			-- https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md
 			local servers = {
 				lua_ls = {
 					settings = {
@@ -41,137 +77,41 @@ return {
 					},
 				},
 
-				-- rust_analyzer = {
-				-- 	settings = {
-				-- 		-- Enable all features for monorepo support
-				-- 		cargo = {
-				-- 			buildScripts = {
-				-- 				enable = true,
-				-- 			},
-				-- 			-- Load all targets (important for monorepos)
-				-- 			allTargets = true,
-				-- 			-- Use workspace root
-				-- 			loadOutDirsFromCheck = true,
-				-- 			-- Enable features for all crates
-				-- 			features = "all",
-				-- 		},
-				-- 		-- Enhanced diagnostics
-				-- 		diagnostics = {
-				-- 			enable = true,
-				-- 			enableExperimental = true,
-				-- 			-- Show diagnostics for disabled code
-				-- 			disabled = {},
-				-- 		},
-				-- 		-- Improved checking
-				-- 		check = {
-				-- 			command = "clippy",
-				-- 			allTargets = true,
-				-- 			features = "all",
-				-- 			extraArgs = { "--all", "--", "-W", "clippy::all" },
-				-- 		},
-				-- 		-- Better proc macro support
-				-- 		procMacro = {
-				-- 			enable = true,
-				-- 			ignored = {},
-				-- 		},
-				-- 		-- Workspace symbol search
-				-- 		workspace = {
-				-- 			symbol = {
-				-- 				search = {
-				-- 					scope = "workspace_and_dependencies",
-				-- 				},
-				-- 			},
-				-- 		},
-				-- 		-- Import resolution
-				-- 		imports = {
-				-- 			granularity = {
-				-- 				group = "module",
-				-- 			},
-				-- 			prefix = "self",
-				-- 		},
-				-- 		-- Lens settings
-				-- 		lens = {
-				-- 			enable = true,
-				-- 			run = {
-				-- 				enable = true,
-				-- 			},
-				-- 			debug = {
-				-- 				enable = true,
-				-- 			},
-				-- 			implementations = {
-				-- 				enable = true,
-				-- 			},
-				-- 			references = {
-				-- 				adt = {
-				-- 					enable = true,
-				-- 				},
-				-- 				enumVariant = {
-				-- 					enable = true,
-				-- 				},
-				-- 				method = {
-				-- 					enable = true,
-				-- 				},
-				-- 				trait = {
-				-- 					enable = true,
-				-- 				},
-				-- 			},
-				-- 		},
-				-- 		-- Hover actions
-				-- 		hover = {
-				-- 			actions = {
-				-- 				enable = true,
-				-- 			},
-				-- 		},
-				-- 	},
-				-- 	-- Ensure proper root directory detection for monorepos
-				-- 	root_dir = function(fname)
-				-- 		local cargo_crate_dir = lspconfig.util.root_pattern("Cargo.toml")(fname)
-				-- 		local cargo_workspace_dir =
-				-- 			lspconfig.util.root_pattern("Cargo.lock", "rust-project.json")(fname)
-				-- 		return cargo_workspace_dir or cargo_crate_dir
-				-- 	end,
-				-- 	-- Add environment variables if needed
-				-- 	cmd = {
-				-- 		"rust-analyzer",
-				-- 	},
-				-- 	-- Set initialization options
-				-- 	init_options = {
-				-- 		lspMux = nil,
-				-- 	},
-				-- },
+				-- Python LSP
+				ty = {
+					settings = {},
+				},
 
-				pyright = {
+				ts_ls = {
+					-- always try the path imports, rather than relative paths
 					settings = {
-						pyright = {
-							disableOrganizeImports = true,
+						typescript = {
+							preferences = {
+								importModuleSpecifier = "absolute",
+								importModuleSpecifierEnding = "minimal",
+							},
 						},
-						python = {
-							analysis = {
-								ignore = { "*" },
+						javascript = {
+							preferences = {
+								importModuleSpecifier = "absolute",
+								importModuleSpecifierEnding = "minimal",
 							},
 						},
 					},
-				},
-
-				-- Disable formatting provider since we're using biome
-				ts_ls = {
+					-- Disable formatting provider since we're using biome
 					server_capabilities = {
 						documentFormattingProvider = false,
 					},
 				},
 
-				prettierd = {
-					root_dir = lspconfig.util.root_pattern("package.json", "node_modules", ".prettierrc.json"),
-				},
-
 				biome = {
 					cmd = { "biome", "lsp-proxy" },
-					root_dir = lspconfig.util.root_pattern("package.json", "node_modules", "biome.json"),
+					root_dir = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h"),
 					workspace_required = true,
 				},
 
+				zls = true,
 				tailwindcss = true,
-				astro = true,
 			}
 
 			local servers_to_install = vim.tbl_filter(function(key)
@@ -194,19 +134,15 @@ return {
 			})
 
 			local ensure_installed = {
-				"tailwindcss-language-server",
-				"yamlls",
-				"astro",
-				"terraformls",
 				"stylua",
 				"bashls",
 				"html",
 				"ruff",
-				"rust-analyzer",
+				"astro",
 			}
 
 			vim.list_extend(ensure_installed, servers_to_install)
-			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+			require("mason-lspconfig").setup({ ensure_installed = ensure_installed })
 
 			for name, config in pairs(servers) do
 				if config == true then
@@ -216,7 +152,7 @@ return {
 					capabilities = capabilities,
 				}, config)
 
-				lspconfig[name].setup(config)
+				vim.lsp.config(name, config)
 			end
 
 			local disable_semantic_tokens = {
@@ -302,7 +238,6 @@ return {
 					javascriptreact = { "biome-check" },
 					typescript = { "biome-check" },
 					typescriptreact = { "biome-check" },
-					astro = { "prettierd" },
 				},
 			})
 
