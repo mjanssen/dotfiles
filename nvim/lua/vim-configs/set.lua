@@ -38,5 +38,6 @@ o.signcolumn = "yes"
 o.isfname:append("@-@")
 
 o.updatetime = 50
+o.timeoutlen = 300
 
 o.cursorline = true
