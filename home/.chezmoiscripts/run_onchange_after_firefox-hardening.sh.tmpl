@@ -28,16 +28,33 @@ if [[ ! -f "$profiles_ini" ]]; then
 fi
 
 # Locate the profile flagged Default=1
+# Firefox 67+ uses [Install...] block's Default=<path> as authoritative.
 profile_path=$(awk '
   BEGIN { RS=""; FS="\n" }
-  /^\[Profile/ && /Default=1/ {
+  /^\[Install/ {
     for (i=1; i<=NF; i++) {
-      if ($i ~ /^Path=/) { sub(/^Path=/, "", $i); print $i; exit }
+      if ($i ~ /^Default=/) {
+        sub(/^Default=/, "", $i)
+        print $i
+        exit
+      }
     }
   }
 ' "$profiles_ini")
 
-# Fallback: any *.default-release directory
+# Legacy fallback: profile with Default=1
+if [[ -z "$profile_path" ]]; then
+  profile_path=$(awk '
+    BEGIN { RS=""; FS="\n" }
+    /^\[Profile/ && /Default=1/ {
+      for (i=1; i<=NF; i++) {
+        if ($i ~ /^Path=/) { sub(/^Path=/, "", $i); print $i; exit }
+      }
+    }
+  ' "$profiles_ini")
+fi
+
+# Last resort: any *.default-release directory
 if [[ -z "$profile_path" ]]; then
   profile_path=$(find "$firefox_root" -maxdepth 1 -type d -name '*.default-release' -printf '%f\n' 2>/dev/null | head -1)
 fi
