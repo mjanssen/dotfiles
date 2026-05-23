@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+# Hashes below force re-run when source files change:
+# user.js:           {{ include "dot_config/firefox-hardening/user.js" | sha256sum }}
+# user-overrides.js: {{ include "dot_config/firefox-hardening/user-overrides.js" | sha256sum }}
+# userChrome.css:    {{ include "dot_config/firefox-hardening/chrome/userChrome.css" | sha256sum }}
+# userContent.css:   {{ include "dot_config/firefox-hardening/chrome/userContent.css" | sha256sum }}
+
+set -euo pipefail
+
+src="$HOME/.config/firefox-hardening"
+
+{{- if eq .chezmoi.os "darwin" }}
+firefox_root="$HOME/Library/Application Support/Firefox"
+{{- else }}
+if [[ -d "$HOME/.var/app/org.mozilla.firefox/.mozilla/firefox" ]]; then
+  firefox_root="$HOME/.var/app/org.mozilla.firefox/.mozilla/firefox"
+else
+  firefox_root="$HOME/.mozilla/firefox"
+fi
+{{- end }}
+
+profiles_ini="$firefox_root/profiles.ini"
+if [[ ! -f "$profiles_ini" ]]; then
+  echo "profiles.ini not found at $profiles_ini" >&2
+  echo "Launch Firefox once to create the default profile, then re-run: chezmoi apply" >&2
+  exit 0
+fi
+
+# Locate the profile flagged Default=1
+profile_path=$(awk '
+  BEGIN { RS=""; FS="\n" }
+  /^\[Profile/ && /Default=1/ {
+    for (i=1; i<=NF; i++) {
+      if ($i ~ /^Path=/) { sub(/^Path=/, "", $i); print $i; exit }
+    }
+  }
+' "$profiles_ini")
+
+# Fallback: any *.default-release directory
+if [[ -z "$profile_path" ]]; then
+  profile_path=$(find "$firefox_root" -maxdepth 1 -type d -name '*.default-release' -printf '%f\n' 2>/dev/null | head -1)
+fi
+
+if [[ -z "$profile_path" ]]; then
+  echo "No default-release profile found in $firefox_root" >&2
+  exit 1
+fi
+
+profile_dir="$firefox_root/$profile_path"
+
+cp "$src/user.js"           "$profile_dir/user.js"
+cp "$src/user-overrides.js" "$profile_dir/user-overrides.js"
+
+mkdir -p "$profile_dir/chrome"
+cp "$src/chrome/userChrome.css"  "$profile_dir/chrome/userChrome.css"
+cp "$src/chrome/userContent.css" "$profile_dir/chrome/userContent.css"
+
+echo "Firefox hardening applied to: $profile_dir"
