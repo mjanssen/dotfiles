@@ -9,3 +9,8 @@ user_pref("privacy.clearOnShutdown.sessions", false);
 
 user_pref("privacy.userContext.enabled", true);
 user_pref("privacy.userContext.ui.enabled", true);
+
+user_pref("sidebar.revamp", true);
+user_pref("sidebar.verticalTabs", true);
+user_pref("sidebar.main.tools", "");
+user_pref("sidebar.visibility", "always-show");
