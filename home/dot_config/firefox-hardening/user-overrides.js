@@ -6,3 +6,6 @@ user_pref("browser.search.suggest.enabled", true);
 user_pref("privacy.clearOnShutdown.history", false);
 user_pref("privacy.clearOnShutdown.cookies", false);
 user_pref("privacy.clearOnShutdown.sessions", false);
+
+user_pref("privacy.userContext.enabled", true);
+user_pref("privacy.userContext.ui.enabled", true);

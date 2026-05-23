@@ -5,6 +5,8 @@
 # user-overrides.js: {{ include "dot_config/firefox-hardening/user-overrides.js" | sha256sum }}
 # userChrome.css:    {{ include "dot_config/firefox-hardening/chrome/userChrome.css" | sha256sum }}
 # userContent.css:   {{ include "dot_config/firefox-hardening/chrome/userContent.css" | sha256sum }}
+# xulstore.json:     {{ include "dot_config/firefox-hardening/xulstore.json" | sha256sum }}
+# containers.json:   {{ include "dot_config/firefox-hardening/containers.json" | sha256sum }}
 
 set -euo pipefail
 
@@ -65,6 +67,14 @@ if [[ -z "$profile_path" ]]; then
 fi
 
 profile_dir="$firefox_root/$profile_path"
+
+if [[ -f "$src/xulstore.json" ]]; then
+  cp "$src/xulstore.json" "$profile_dir/xulstore.json"
+fi
+
+if [[ -f "$src/containers.json" ]]; then
+  cp "$src/containers.json" "$profile_dir/containers.json"
+fi
 
 cp "$src/user.js"           "$profile_dir/user.js"
 cp "$src/user-overrides.js" "$profile_dir/user-overrides.js"
