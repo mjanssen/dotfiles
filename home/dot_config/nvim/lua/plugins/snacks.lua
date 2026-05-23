@@ -9,6 +9,13 @@ return {
 	},
 	keys = {
 		{
+			"<C-p>",
+			function()
+				Snacks.picker.files()
+			end,
+			desc = "Find files",
+		},
+		{
 			"<leader>pf",
 			function()
 				Snacks.picker.files()

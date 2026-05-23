@@ -40,6 +40,14 @@ vim.keymap.set("n", "<leader>cad", "<cmd>:!cp '%:p' '%:p:h/%:t:r-copy.%:e'<CR>")
 -- filetree
 vim.keymap.set("n", "<leader>ft", "<cmd>:Neotree toggle<CR>")
 
+-- LSP restart
+vim.keymap.set("n", "<leader>lr", function()
+	vim.lsp.stop_client(vim.lsp.get_clients({ bufnr = 0 }))
+	vim.defer_fn(function()
+		vim.cmd("edit")
+	end, 500)
+end)
+
 -- Trouble
 vim.keymap.set("n", "<leader>xx", function()
 	require("trouble").toggle()
