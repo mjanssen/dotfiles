@@ -1,33 +1,69 @@
-# configuration for dev system
+# dotfiles
+ 
+Cross-platform configuration managed by [chezmoi](https://www.chezmoi.io/). Targets macOS and [Bazzite](https://bazzite.gg/) (Fedora Atomic).
+ 
+Managed:
+ 
+- `zsh` (`~/.zshrc`, machine-local overrides via `~/.zshrc.local`)
+- `tmux` (config, sessionizer, cheat-sheet scripts)
+- Neovim
+- Ghostty
+- SQLFluff
+- Firefox hardening ([Betterfox](https://github.com/yokoffing/Betterfox) + personal overrides, `userChrome.css`, `userContent.css`, `containers.json`, `xulstore.json`)
 
-symlinks for dotfiles
+## Prerequisites
+ 
+- [chezmoi](https://www.chezmoi.io/install/)
+- Git, with SSH access to GitHub
+- [Homebrew](https://brew.sh/) (macOS and Linux)
+- Zsh (Bazzite: `rpm-ostree install zsh && systemctl reboot`)
+Runtime tools used by configs:
+ 
+```sh
+brew install neovim tmux fzf ripgrep
 ```
-ln -s $HOME/.config/dotfiles/nvim $HOME/.config
-ln -s $HOME/.config/dotfiles/tmux $HOME/.config
-ln -s $HOME/.config/dotfiles/kitty $HOME/.config
+ 
+Ghostty: install separately ([ghostty.org](https://ghostty.org/)).
 
-... any other config that has to be symlinked
+## Bootstrap a new machine
+ 
+```sh
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init mjanssen
+chezmoi diff
+chezmoi apply -v
 ```
-
-installs
-brew
-`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-
-nvm
-`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"`
-rust
-`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"`
-cp .zshrc
-`cp $HOME/.config/dotfiles/.zshrc $HOME/.zshrc`
-
-`source ~/.zshrc`
-
-commands
+ 
+`~/.local/bin` must be on `PATH`.
+ 
+After first apply, switch the chezmoi source remote to SSH so future pushes work without prompts:
+ 
+```sh
+chezmoi cd
+git remote set-url origin git@github.com:mjanssen/dotfiles.git
+exit
 ```
-nvm install --lts --default
-brew install ripgrep
-brew install neovim
-brew install fzf
-brew install tmux
-brew install python
+  
+chezmoi prefixes used:
+ 
+| Prefix          | Meaning                                                          |
+|-----------------|------------------------------------------------------------------|
+| `dot_`          | Target filename starts with `.`                                  |
+| `executable_`   | Apply mode `0755`                                                |
+| `run_onchange_` | Script under `.chezmoiscripts/`; re-runs when its content changes |
+ 
+Reference: [chezmoi target types](https://www.chezmoi.io/reference/target-types/).
+
+## Machine-local overrides
+ 
+`~/.zshrc` ends with:
+ 
+```sh
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+```
+ 
+Per-machine aliases, exports, and host-specific tweaks go in `~/.zshrc.local`. Not managed by chezmoi, not tracked in git.
+ 
+```sh
+touch ~/.zshrc.local
+chmod 600 ~/.zshrc.local
 ```
