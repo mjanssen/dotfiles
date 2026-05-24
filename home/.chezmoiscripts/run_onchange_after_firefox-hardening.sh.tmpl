@@ -8,6 +8,11 @@
 # xulstore.json:     {{ include "dot_config/firefox-hardening/xulstore.json" | sha256sum }}
 # containers.json:   {{ include "dot_config/firefox-hardening/containers.json" | sha256sum }}
 
+if pgrep -f '/firefox( |$)' >/dev/null 2>&1; then
+  echo "Firefox is running. Quit it before applying (containers.json and prefs are overwritten on shutdown)." >&2
+  exit 1
+fi
+
 set -euo pipefail
 
 src="$HOME/.config/firefox-hardening"
@@ -87,5 +92,7 @@ fi
 mkdir -p "$profile_dir/chrome"
 cp "$src/chrome/userChrome.css"  "$profile_dir/chrome/userChrome.css"
 cp "$src/chrome/userContent.css" "$profile_dir/chrome/userContent.css"
+
+rm -f "$profile_dir/containers.json.bak"
 
 echo "Firefox hardening applied to: $profile_dir"
