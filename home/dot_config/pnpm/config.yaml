@@ -1,0 +1,38 @@
+# Supply-chain delay: refuse versions younger than 30 days
+minimumReleaseAge: 43200
+
+# Fail resolution if no in-range version satisfies the age constraint,
+# rather than silently falling back to a fresh (potentially compromised) version.
+# Auto-true when minimumReleaseAge is set explicitly, but state it for clarity.
+minimumReleaseAgeStrict: true
+
+# Fail if a registry omits the `time` field (some mirrors drop it,
+# which would otherwise bypass the age check entirely).
+minimumReleaseAgeIgnoreMissingTime: false
+
+# Refuse installs where trust evidence (provenance, trusted publisher)
+# has regressed compared to prior releases of the same package.
+trustPolicy: no-downgrade
+
+# Allow trusted-publisher checks to skip packages older than ~6 months,
+# since pre-provenance releases legitimately lack signatures.
+# Omit this if you want maximum strictness on legacy packages.
+trustPolicyIgnoreAfter: 262800
+
+# Block transitive deps resolved from git URLs or raw tarballs.
+blockExoticSubdeps: true
+
+# Fail install if any dependency has an unreviewed postinstall/install script.
+strictDepBuilds: true
+
+# Explicit allowlist for build scripts. Empty = nothing runs without review.
+allowBuilds: {}
+
+# Belt-and-suspenders: explicit deny on the kill-switch that would allow all builds.
+dangerouslyAllowAllBuilds: false
+
+# Reject invalid TLS certs on registry connections. Default, pin it.
+strictSsl: true
+
+# Verify content-addressable store integrity on link. Default, pin it.
+verifyStoreIntegrity: true

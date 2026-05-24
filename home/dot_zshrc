@@ -1,6 +1,9 @@
 export PATH=".:/user/local/bin:$PATH"
 export PATH="/opt/homebrew/bin:$PATH"
 
+# $XDG_CONFIG_HOME (used by some applications)
+export XDG_CONFIG_HOME="$HOME/.config"
+
 PS1="%m: %~ %% "
 
 alias k="kubectl"
