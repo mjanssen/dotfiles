@@ -76,8 +76,13 @@ if [[ -f "$src/containers.json" ]]; then
   cp "$src/containers.json" "$profile_dir/containers.json"
 fi
 
-cp "$src/user.js"           "$profile_dir/user.js"
-cp "$src/user-overrides.js" "$profile_dir/user-overrides.js"
+{
+  cat "$src/user.js"
+  if [[ -f "$src/user-overrides.js" ]]; then
+    printf '\n/*** User Overrides from user-overrides.js ***/\n'
+    cat "$src/user-overrides.js"
+  fi
+} > "$profile_dir/user.js"
 
 mkdir -p "$profile_dir/chrome"
 cp "$src/chrome/userChrome.css"  "$profile_dir/chrome/userChrome.css"
