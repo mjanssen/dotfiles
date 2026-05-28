@@ -25,9 +25,6 @@ blockExoticSubdeps: true
 # Fail install if any dependency has an unreviewed postinstall/install script.
 strictDepBuilds: true
 
-# Explicit allowlist for build scripts. Empty = nothing runs without review.
-allowBuilds: {}
-
 # Belt-and-suspenders: explicit deny on the kill-switch that would allow all builds.
 dangerouslyAllowAllBuilds: false
 
