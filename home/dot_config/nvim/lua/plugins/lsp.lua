@@ -170,10 +170,10 @@ return {
 
 					vim.opt_local.omnifunc = "v:lua.vim.lsp.omnifunc"
 					vim.keymap.set("n", "gd", function()
-						Snacks.picker.lsp_definitions()
+						require("telescope.builtin").lsp_definitions()
 					end, { buffer = bufnr })
 					vim.keymap.set("n", "gr", function()
-						Snacks.picker.lsp_references()
+						require("telescope.builtin").lsp_references()
 					end, { buffer = bufnr })
 
 					vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, { buffer = bufnr })
