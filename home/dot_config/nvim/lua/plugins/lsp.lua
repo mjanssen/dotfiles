@@ -108,6 +108,7 @@ return {
 					cmd = { "biome", "lsp-proxy" },
 					root_dir = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h"),
 					workspace_required = true,
+					offset_encoding = "utf-16",
 				},
 
 				zls = true,
