@@ -5,11 +5,60 @@ return {
 			"williamboman/mason.nvim",
 			"williamboman/mason-lspconfig.nvim",
 
-			-- Top bar filename
-			{ "j-hui/fidget.nvim", opts = {} },
-
 			-- Autoformatting
-			"stevearc/conform.nvim",
+			{
+				"stevearc/conform.nvim",
+				event = { "BufWritePre" },
+				cmd = { "ConformInfo" },
+				opts = function()
+					local util = require("conform.util")
+					return {
+						default_format_opts = {
+							lsp_format = "fallback",
+						},
+						formatters = {
+							["biome-check"] = {
+								-- Require working directory to be found
+								require_cwd = true,
+							},
+							ruff_organize_imports = {
+								command = "ruff",
+								args = {
+									"check",
+									"--force-exclude",
+									"--select=I001",
+									"--fix",
+									"--exit-zero",
+									"--stdin-filename",
+									"$FILENAME",
+									"-",
+								},
+								stdin = true,
+								cwd = util.root_file({
+									"pyproject.toml",
+									"ruff.toml",
+									".ruff.toml",
+								}),
+							},
+						},
+						format_on_save = {
+							timeout_ms = 5000,
+							lsp_fallback = true,
+						},
+						formatters_by_ft = {
+							lua = { "stylua" },
+							sql = { "sqlfluff" },
+							python = { "ruff_format", "ruff_organize_imports" },
+							json = { "biome-check" },
+							-- TS/JS files
+							javascript = { "biome-check" },
+							javascriptreact = { "biome-check" },
+							typescript = { "biome-check" },
+							typescriptreact = { "biome-check" },
+						},
+					}
+				end,
+			},
 
 			-- Schema information
 			"b0o/SchemaStore.nvim",
@@ -34,21 +83,19 @@ return {
 									-- Don't eagerly load all feature flags
 									cargo = {
 										allFeatures = false,
+										buildScripts = { enable = true }, -- proc macros
 									},
 									-- The boolean toggle
 									checkOnSave = true,
 									-- The actual command configuration
 									check = {
 										command = "clippy",
+										workspace = false,
 									},
 
-									-- This check command COULD be implemented, but will spike the CPU on save. No bueno
-									-- check = {
-									--     command = "clippy",
-									--     allTargets = true,
-									--     features = "all",
-									--     extraArgs = { "--all", "--", "-W", "clippy::all" },
-									-- },
+									files = {
+										excludeDirs = { "target", "node_modules", ".git", "dist" },
+									},
 								},
 							},
 						},
@@ -61,6 +108,11 @@ return {
 			if pcall(require, "cmp_nvim_lsp") then
 				capabilities = require("cmp_nvim_lsp").default_capabilities()
 			end
+
+			-- Force utf-16 across all servers. Biome can't negotiates utf-8 by default which causes conflicts
+			capabilities = capabilities or vim.lsp.protocol.make_client_capabilities()
+			capabilities.general = capabilities.general or {}
+			capabilities.general.positionEncodings = { "utf-16" }
 
 			-- https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md
 			local servers = {
@@ -83,6 +135,9 @@ return {
 				},
 
 				ts_ls = {
+					init_options = {
+						maxTsServerMemory = 8192,
+					},
 					-- always try the path imports, rather than relative paths
 					settings = {
 						typescript = {
@@ -106,12 +161,11 @@ return {
 
 				biome = {
 					cmd = { "biome", "lsp-proxy" },
-					root_dir = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h"),
+					root_markers = { "biome.json", "biome.jsonc" },
 					workspace_required = true,
 					offset_encoding = "utf-16",
 				},
 
-				zls = true,
 				tailwindcss = true,
 			}
 
@@ -150,6 +204,7 @@ return {
 				end
 				config = vim.tbl_deep_extend("force", {}, {
 					capabilities = capabilities,
+					offset_encoding = "utf-16",
 				}, config)
 
 				vim.lsp.config(name, config)
@@ -170,9 +225,7 @@ return {
 					end
 
 					vim.opt_local.omnifunc = "v:lua.vim.lsp.omnifunc"
-					vim.keymap.set("n", "gd", function()
-						require("telescope.builtin").lsp_definitions()
-					end, { buffer = bufnr })
+					vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = bufnr })
 					vim.keymap.set("n", "gr", function()
 						require("telescope.builtin").lsp_references()
 					end, { buffer = bufnr })
@@ -198,52 +251,6 @@ return {
 							client.server_capabilities[k] = v
 						end
 					end
-				end,
-			})
-
-			-- Autoformatting Setup with Conform
-			require("conform").setup({
-				formatters = {
-					ruff_organize_imports = {
-						command = "ruff",
-						args = {
-							"check",
-							"--force-exclude",
-							"--select=I001",
-							"--fix",
-							"--exit-zero",
-							"--stdin-filename",
-							"$FILENAME",
-							"-",
-						},
-						stdin = true,
-						cwd = require("conform.util").root_file({
-							"pyproject.toml",
-							"ruff.toml",
-							".ruff.toml",
-						}),
-					},
-				},
-				formatters_by_ft = {
-					lua = { "stylua" },
-					sql = { "sqlfluff" },
-					python = { "ruff_format", "ruff_organize_imports" },
-					json = { "biome-check" },
-					javascript = { "biome-check" },
-					javascriptreact = { "biome-check" },
-					typescript = { "biome-check" },
-					typescriptreact = { "biome-check" },
-				},
-			})
-
-			-- Format on save
-			vim.api.nvim_create_autocmd("BufWritePre", {
-				callback = function(args)
-					require("conform").format({
-						bufnr = args.buf,
-						lsp_fallback = true,
-						quiet = true,
-					})
 				end,
 			})
 		end,

@@ -14,8 +14,26 @@ return {
 			telescope.setup({
 				defaults = {
 					preview = {
-						-- ft_to_lang was removed in nvim 0.10+; disable ts highlighting in previewer
 						treesitter = false,
+					},
+					file_ignore_patterns = {
+						"%.git/",
+						"target/",
+						"node_modules/",
+						"dist/",
+						"%.lock",
+					},
+					vimgrep_arguments = {
+						"rg",
+						"--color=never",
+						"--no-heading",
+						"--with-filename",
+						"--line-number",
+						"--column",
+						"--smart-case",
+						"--glob=!**/target/**",
+						"--glob=!**/node_modules/**",
+						"--glob=!**/dist/**",
 					},
 				},
 			})
