@@ -225,13 +225,19 @@ return {
 					end
 
 					vim.opt_local.omnifunc = "v:lua.vim.lsp.omnifunc"
-					vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = bufnr })
+					vim.keymap.set("n", "gd", function()
+						require("telescope.builtin").lsp_definitions()
+					end, { buffer = bufnr })
 					vim.keymap.set("n", "gr", function()
 						require("telescope.builtin").lsp_references()
 					end, { buffer = bufnr })
 
-					vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, { buffer = bufnr })
-					vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { buffer = bufnr })
+					vim.keymap.set("n", "gt", function()
+						require("telescope.builtin").lsp_type_definitions()
+					end, { buffer = bufnr })
+					vim.keymap.set("n", "gD", function()
+						require("telescope.builtin").lsp_declarations()
+					end, { buffer = bufnr })
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = bufnr })
 
 					vim.keymap.set("n", "<space>cr", vim.lsp.buf.rename, { buffer = bufnr })

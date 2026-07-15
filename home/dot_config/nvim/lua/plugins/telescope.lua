@@ -1,7 +1,6 @@
 return {
 	{
 		"nvim-telescope/telescope.nvim",
-		branch = "0.1.x",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			{
@@ -13,6 +12,10 @@ return {
 			local telescope = require("telescope")
 			telescope.setup({
 				defaults = {
+					path_display = {
+						-- shorten = { len = 8 },
+						"filename_first",
+					},
 					preview = {
 						treesitter = false,
 					},

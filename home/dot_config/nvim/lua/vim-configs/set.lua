@@ -37,7 +37,7 @@ o.scrolloff = 8
 o.signcolumn = "yes"
 o.isfname:append("@-@")
 
-o.updatetime = 50
+o.updatetime = 1000
 o.timeoutlen = 300
 
 o.autoread = true
