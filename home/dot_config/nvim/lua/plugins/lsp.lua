@@ -160,7 +160,14 @@ return {
 				},
 
 				biome = {
-					cmd = { "biome", "lsp-proxy" },
+					-- Prefer project-pinned Biome when present (through node_modules). If this
+					-- is not available, fall back to the managed global version (Mason)
+					cmd = function(dispatchers)
+						local root = vim.fs.root(0, { "biome.json", "biome.jsonc" }) or vim.uv.cwd()
+						local local_bin = vim.fs.joinpath(root, "node_modules", ".bin", "biome")
+						local bin = vim.fn.executable(local_bin) == 1 and local_bin or "biome"
+						return vim.lsp.rpc.start({ bin, "lsp-proxy" }, dispatchers)
+					end,
 					root_markers = { "biome.json", "biome.jsonc" },
 					workspace_required = true,
 					offset_encoding = "utf-16",
