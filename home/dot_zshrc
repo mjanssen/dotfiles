@@ -18,3 +18,13 @@ source <(kubectl completion zsh)
 
 # bun completions
 [ -s "/Users/mjanssen/.bun/_bun" ] && source "/Users/mjanssen/.bun/_bun"
+
+# seperate claude-code setups
+claude() {
+  echo "Use claude-work or claude-personal instead." >&2
+  return 1
+}
+
+claude-work()     { CLAUDE_CONFIG_DIR="$HOME/.claude-work"     command claude "$@"; }
+claude-personal() { CLAUDE_CONFIG_DIR="$HOME/.claude-personal" command claude "$@"; }
+
