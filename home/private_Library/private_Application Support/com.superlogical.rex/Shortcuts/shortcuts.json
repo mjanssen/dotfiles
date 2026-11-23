@@ -1,0 +1,39 @@
+{
+  "layer" : {
+    "bindings" : [
+      {
+        "action" : "client.tab.next",
+        "keys" : [
+          "shift+cmd+j"
+        ],
+        "source" : "settings"
+      },
+      {
+        "action" : "client.tab.previous",
+        "keys" : [
+          "shift+cmd+k"
+        ],
+        "source" : "settings"
+      }
+    ],
+    "name" : "settings",
+    "removals" : [
+      {
+        "action" : "client.tab.next",
+        "keys" : [
+          "ctrl+tab"
+        ]
+      },
+      {
+        "action" : "client.tab.previous",
+        "keys" : [
+          "ctrl+shift+tab"
+        ]
+      }
+    ]
+  },
+  "migrations" : [
+    "bracket-characters"
+  ],
+  "version" : 1
+}

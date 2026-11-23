@@ -1,0 +1,662 @@
+#!/usr/bin/env python3
+"""Show every running Neovim session, the tmux or Rex pane it lives in, and what it costs.
+
+Two memory numbers are reported per process, because on macOS they diverge wildly:
+
+  RSS        pages resident in physical RAM right now.
+  FOOTPRINT  phys_footprint - resident plus this process's compressed and
+             swapped pages. This is the number Activity Monitor shows in its
+             "Memory" column.
+
+An idle or Ctrl-Z suspended process gets almost all of its pages compressed, so
+its RSS collapses while its footprint stays huge. A suspended Neovim can read as
+750M resident and 12G footprint. RSS alone hides that completely, which is why
+this reports both and sorts by footprint.
+
+Nvim runs as two processes: a TUI client and a `nvim --embed` server child.
+Suspending the TUI does not stop the server or its language servers.
+
+Language servers that do not belong to any nvim (another editor, an agent's LSP
+integration) are listed separately: they compete for the same CPU, RAM and cargo
+locks, and are easy to forget about.
+
+Usage: nvim-sessions [-t|--tree] [--once]
+  On a terminal: a live view, refreshed every 2s, with each session broken down
+  per process. Keys are listed in the footer.
+  --once, or when stdout is not a terminal: print a report and exit.
+  -t  in the printed report, break each session down per process.
+"""
+
+import collections
+import ctypes
+import ctypes.util
+import json
+import os
+import re
+import signal
+import subprocess
+import sys
+import time
+
+# proc_pid_rusage(pid, RUSAGE_INFO_V0, buf). struct rusage_info_v0 is
+# uuid[16] followed by uint64 fields; ri_phys_footprint is the 8th, at offset 72.
+RUSAGE_INFO_V0 = 0
+PHYS_FOOTPRINT_OFFSET = 72
+HOME = os.path.expanduser("~")
+REFRESH_MS = 2000
+
+# Matched exactly against the executable name, and for node/python against the
+# script name without its extension. Substring matching is not an option: "ty"
+# and "biome" are also inside macOS daemon names. Anything under an nvim is
+# shown regardless; this list only decides what counts as a language server
+# outside of one.
+LSP_NAMES = {
+    "rust-analyzer", "tsserver", "typescript-language-server", "vtsls",
+    "lua-language-server", "biome", "tailwindcss-language-server", "ty",
+    "ruff", "pyright", "basedpyright", "gopls", "zls", "clangd", "astro-ls",
+    "bash-language-server", "vscode-html-language-server", "eslint", "jdtls",
+    "taplo", "marksman", "vtsls",
+}
+
+
+def _load_footprint_fn():
+    try:
+        libc = ctypes.CDLL(ctypes.util.find_library("System") or "libSystem.dylib")
+        fn = libc.proc_pid_rusage
+    except (OSError, AttributeError):
+        return lambda pid: 0
+    fn.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_void_p]
+    fn.restype = ctypes.c_int
+    buf = (ctypes.c_uint8 * 512)()
+
+    def footprint(pid):
+        if fn(pid, RUSAGE_INFO_V0, ctypes.byref(buf)) != 0:
+            return 0  # not ours, or already gone
+        off = PHYS_FOOTPRINT_OFFSET
+        return int.from_bytes(bytes(buf[off:off + 8]), "little")
+
+    return footprint
+
+
+footprint_of = _load_footprint_fn()
+
+
+def human(n):
+    if n >= 1024 ** 3:
+        return "%.1fG" % (n / 1024 ** 3)
+    if n >= 1024 ** 2:
+        return "%dM" % (n / 1024 ** 2)
+    return "%dK" % (n / 1024)
+
+
+def human_etime(t):
+    """ps etime is [[dd-]hh:]mm:ss - collapse to the largest useful unit."""
+    if "-" in t:
+        return "%dd" % int(t.split("-")[0])
+    parts = t.split(":")
+    return ("%dh" if len(parts) == 3 else "%dm") % int(parts[0])
+
+
+def cpu_seconds(t):
+    """ps time is [dd-][hh:]mm:ss.cc, where minutes may exceed 59."""
+    days = 0
+    if "-" in t:
+        d, t = t.split("-", 1)
+        days = int(d)
+    secs = 0.0
+    for part in t.split(":"):
+        secs = secs * 60 + float(part)
+    return days * 86400 + secs
+
+
+def read_processes():
+    out = subprocess.run(
+        ["ps", "-Ao", "pid=,ppid=,rss=,%cpu=,time=,stat=,etime=,args="],
+        capture_output=True, text=True,
+    ).stdout
+    procs, kids = {}, collections.defaultdict(list)
+    for line in out.splitlines():
+        f = line.split(None, 7)
+        if len(f) < 8 or not f[0].isdigit():
+            continue
+        pid, ppid = int(f[0]), int(f[1])
+        procs[pid] = {
+            "pid": pid, "ppid": ppid, "rss": int(f[2]) * 1024,
+            "pcpu": float(f[3]), "cputime": cpu_seconds(f[4]),
+            "stat": f[5], "etime": f[6], "args": f[7],
+            "fp": footprint_of(pid),
+        }
+        kids[ppid].append(pid)
+    return procs, kids
+
+
+def descendants(pid, kids):
+    """Iterative, and guards against a reparenting cycle."""
+    seen, stack = set(), [pid]
+    while stack:
+        p = stack.pop()
+        if p in seen:
+            continue
+        seen.add(p)
+        stack.extend(kids.get(p, ()))
+    return seen
+
+
+def tmux_panes():
+    try:
+        if subprocess.run(["tmux", "info"], capture_output=True).returncode != 0:
+            return {}
+        out = subprocess.run(
+            ["tmux", "list-panes", "-a", "-F",
+             "#{pane_pid}\t#{session_name}:#{window_index}.#{pane_index}"],
+            capture_output=True, text=True,
+        ).stdout
+    except FileNotFoundError:
+        return {}
+    panes = {}
+    for line in out.splitlines():
+        if "\t" in line:
+            pid, label = line.split("\t", 1)
+            if pid.isdigit():
+                panes[int(pid)] = (label, [["tmux", "switch-client", "-t", label]])
+    return panes
+
+
+_rex_block_pid = {}
+
+
+def _rex_json(*args):
+    r = subprocess.run(["rex", *args, "--json"], capture_output=True, text=True)
+    return json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else {}
+
+
+def rex_panes():
+    """Maps each Rex pane's root pid (the block's `child`, usually login) to the
+    pane. A block's root pid never changes, so it is looked up once per block."""
+    try:
+        sessions = _rex_json("ls").get("sessions", [])
+    except FileNotFoundError:
+        return {}
+    panes = {}
+    for sess in sessions:
+        sid, label = sess["session_id"], sess.get("label") or sess["session_id"][-8:]
+        for b in _rex_json("block", "ls", "-s", sid).get("blocks", []):
+            bid = b["block_id"]
+            if bid not in _rex_block_pid:
+                r = subprocess.run(["rex", "block", "call", "-s", sid, "-b", bid, "process"],
+                                   capture_output=True, text=True)
+                try:
+                    _rex_block_pid[bid] = json.loads(r.stdout)["child"]["pid"]
+                except (ValueError, KeyError, TypeError):
+                    continue  # not a terminal, or it has no process yet
+            panes[_rex_block_pid[bid]] = (label, [
+                ["rex", "do", "session.select", "session_id=" + sid,
+                 "window_id=" + b["window_id"]],
+                ["rex", "focus", "-s", sid, bid],
+            ])
+    return panes
+
+
+def pane_of(pid, procs, panes):
+    hops = 0
+    while pid > 1 and hops < 40:
+        if pid in panes:
+            return panes[pid]
+        p = procs.get(pid)
+        if p is None:
+            break
+        pid = p["ppid"]
+        hops += 1
+    return None
+
+
+_cwd_cache = {}
+
+
+def cwds(pids):
+    """One lsof call for every pid not seen before, rather than one per pid.
+    A process's cwd rarely changes, and lsof is the slowest part of a refresh."""
+    missing = [p for p in pids if p not in _cwd_cache]
+    if missing:
+        out = subprocess.run(
+            ["lsof", "-a", "-p", ",".join(str(p) for p in missing), "-d", "cwd", "-Fpn"],
+            capture_output=True, text=True,
+        ).stdout
+        cur = None
+        for line in out.splitlines():
+            if line.startswith("p"):
+                cur = int(line[1:]) if line[1:].isdigit() else None
+            elif line.startswith("n") and cur is not None:
+                _cwd_cache.setdefault(cur, line[1:])
+        for p in missing:
+            _cwd_cache.setdefault(p, "?")
+    return {p: _cwd_cache[p] for p in pids}
+
+
+def short(path):
+    return path.replace(HOME, "~", 1) if path.startswith(HOME) else path
+
+
+def script_name(argv, args):
+    """The script a node/python interpreter runs, without its extension. Found
+    by extension rather than position, since a path with a space in it (e.g.
+    "Application Support") splits into several argv tokens."""
+    m = re.search(r"([^/\s]+)\.(?:[cm]?js|py)\b", args)
+    if m:
+        return m.group(1)
+    tok = next((t for t in argv[1:] if not t.startswith("-")), "")
+    return os.path.splitext(os.path.basename(tok))[0]
+
+
+def label_for(args):
+    """Compact, recognisable name for a process."""
+    # Bundle paths contain spaces ("Visual Studio Code.app"), which would cut
+    # the executable path short, so name those after their app instead.
+    app = re.search(r"/([^/]+)\.app/", args)
+    if app:
+        return app.group(1)
+    argv = args.split()
+    head = argv[0] if argv else args
+    name = os.path.basename(head)
+    if name == "nvim":
+        return "nvim (server)" if "--embed" in argv else "nvim (tui)"
+    if name == "node" or name.startswith("python"):
+        script = script_name(argv, args)
+        return "%s %s" % (name, script) if script else name
+    return name
+
+
+def is_nvim(p):
+    argv = p["args"].split()
+    return bool(argv) and os.path.basename(argv[0]) == "nvim"
+
+
+def is_lsp(p):
+    argv = p["args"].split()
+    if not argv:
+        return False
+    name = os.path.basename(argv[0])
+    if name == "node" or name.startswith("python"):
+        name = script_name(argv, p["args"])
+    return name in LSP_NAMES
+
+
+class Sampler:
+    """Turns cumulative CPU time into a CPU% over the last refresh interval.
+
+    ps's own %cpu is a decaying average over roughly the last minute, which
+    lags badly behind a language server that just started or stopped working.
+    It is only used for the very first sample, before there is a delta."""
+
+    def __init__(self):
+        self.prev, self.prev_at = {}, None
+
+    def sample(self):
+        procs, kids = read_processes()
+        now = time.monotonic()
+        if self.prev_at is not None:
+            dt = now - self.prev_at
+            for pid, p in procs.items():
+                before = self.prev.get(pid)
+                if before is not None and dt > 0:
+                    p["pcpu"] = max(0.0, (p["cputime"] - before) / dt * 100)
+        self.prev = {pid: p["cputime"] for pid, p in procs.items()}
+        self.prev_at = now
+        return procs, kids
+
+
+def collect(procs, kids):
+    panes = {**tmux_panes(), **rex_panes()}
+
+    def summarise(tree):
+        return {
+            "rss": sum(procs[q]["rss"] for q in tree),
+            "fp": sum(procs[q]["fp"] for q in tree),
+            "cpu": sum(procs[q]["pcpu"] for q in tree),
+        }
+
+    sessions, claimed = [], set()
+    for pid, p in procs.items():
+        if "--embed" in p["args"] or not is_nvim(p):
+            continue  # servers are counted under their TUI, below
+        tree = descendants(pid, kids)
+        claimed |= tree
+        server = next(
+            (k for k in kids.get(pid, ()) if "--embed" in procs[k]["args"]), pid
+        )
+        sessions.append(dict(
+            summarise(tree), tui=pid, server=server, tree=tree,
+            state="SUSPENDED" if p["stat"].startswith("T") else "running",
+            etime=p["etime"], pane=pane_of(pid, procs, panes),
+        ))
+
+    # An --embed server whose TUI died keeps running, holding its language
+    # servers and their memory, with nothing on screen and no job in any shell.
+    # Keying only off TUIs would make exactly that case invisible, which is the
+    # kind of hidden cost this tool exists to surface.
+    for pid, p in procs.items():
+        if pid in claimed or "--embed" not in p["args"] or not is_nvim(p):
+            continue
+        tree = descendants(pid, kids)
+        claimed |= tree
+        sessions.append(dict(
+            summarise(tree), tui=pid, server=pid, tree=tree,
+            state="ORPHANED", etime=p["etime"], pane=None,
+        ))
+
+    # Only the topmost LSP process of a chain is listed, with its helpers
+    # (proc-macro servers, node workers) folded into its totals.
+    others = []
+    for pid, p in procs.items():
+        if pid in claimed or not is_lsp(p):
+            continue
+        parent = procs.get(p["ppid"])
+        if parent is not None and is_lsp(parent):
+            continue
+        tree = descendants(pid, kids)
+        claimed |= tree
+        others.append(dict(
+            summarise(tree), pid=pid, tree=tree, etime=p["etime"],
+            label=label_for(p["args"]),
+            parent=label_for(parent["args"]) if parent else "?",
+            ppid=p["ppid"], pane=pane_of(pid, procs, panes),
+        ))
+
+    dirs = cwds([s["server"] for s in sessions] + [o["pid"] for o in others])
+    return sessions, others, dirs
+
+
+def session_name(s):
+    if s["state"] == "ORPHANED":
+        return "(no TUI)"
+    return s["pane"][0] if s["pane"] else "(not in a pane)"
+
+
+# --------------------------------------------------------------------------
+# Printed report, for --once and for piping
+
+
+def report(show_tree):
+    procs, kids = Sampler().sample()
+    sessions, others, dirs = collect(procs, kids)
+    if not sessions and not others:
+        print("No Neovim sessions or language servers running.")
+        return
+
+    row = "%-20s %-7s %-10s %-5s %-6s %-7s %-9s %s"
+    if sessions:
+        print(row % ("PANE", "PID", "STATE", "UP", "CPU", "RSS", "FOOTPRINT", "CWD"))
+    for s in sorted(sessions, key=lambda s: -s["fp"]):
+        print(row % (
+            session_name(s), s["server"], s["state"], human_etime(s["etime"]),
+            "%.0f%%" % s["cpu"], human(s["rss"]), human(s["fp"]),
+            short(dirs.get(s["server"], "?")),
+        ))
+        if show_tree:
+            for q in sorted(s["tree"], key=lambda q: -procs[q]["fp"]):
+                if procs[q]["fp"] < 8 * 1024 ** 2 and procs[q]["rss"] < 8 * 1024 ** 2:
+                    continue
+                print("    %-40s %-6s %-7s %-9s" % (
+                    label_for(procs[q]["args"])[:40], "%.0f%%" % procs[q]["pcpu"],
+                    human(procs[q]["rss"]), human(procs[q]["fp"]),
+                ))
+            print()
+
+    if others:
+        print("\nLanguage servers outside nvim:")
+        for o in sorted(others, key=lambda o: -o["fp"]):
+            print("    %-28s %-7s %-6s %-7s %-9s from %s (%d) in %s" % (
+                o["label"][:28], o["pid"], "%.0f%%" % o["cpu"], human(o["rss"]),
+                human(o["fp"]), o["parent"], o["ppid"], short(dirs.get(o["pid"], "?")),
+            ))
+
+    every = sessions + others
+    print("\ntotal: %s RSS / %s footprint" % (
+        human(sum(x["rss"] for x in every)), human(sum(x["fp"] for x in every))))
+    print("CPU here is ps's average over the last minute or so; the live view"
+          "\nmeasures it per refresh."
+          "\nFOOTPRINT is what Activity Monitor reports. It counts compressed and"
+          "\nswapped pages, so it stays high while RSS drops on an idle process."
+          "\nSubtree sums double-count any memory shared between processes.")
+
+    if any(s["state"] == "SUSPENDED" for s in sessions):
+        print("""
+A SUSPENDED session was backgrounded with Ctrl-Z. Its language servers keep
+running and its pages get compressed, not freed. To get back to one:
+  go to its pane (enter in the live view)
+  fg                                # then :qa properly
+Check for unsaved buffers before killing it.""")
+
+    if any(s["state"] == "ORPHANED" for s in sessions):
+        print("""
+An ORPHANED session is an nvim server whose TUI died. Nothing is on screen and
+no shell has it as a job, but it and its language servers still hold memory.
+There is no way to reattach: kill the pid.""")
+
+
+# --------------------------------------------------------------------------
+# Live view
+
+FOOTER = " j/k move  enter go to pane  x kill  s sort cpu/mem  r refresh  q quit "
+
+
+def build_rows(sessions, others, dirs, procs, sort_key):
+    """Flatten everything into rows. Each selectable row knows which pid to
+    signal and which pane to jump to, so the key handlers stay trivial."""
+    if sort_key == "cpu":
+        key, pkey = (lambda x: -x["cpu"]), (lambda q: -procs[q]["pcpu"])
+    else:
+        key, pkey = (lambda x: -x["fp"]), (lambda q: -procs[q]["fp"])
+
+    rows = []
+    if sessions:
+        rows.append({"kind": "header", "text": "NEOVIM SESSIONS"})
+    for s in sorted(sessions, key=key):
+        name = session_name(s)
+        rows.append({
+            "kind": "session", "name": name, "pid": s["server"], "kill": s["tui"],
+            "state": s["state"], "up": human_etime(s["etime"]), "cpu": s["cpu"],
+            "rss": s["rss"], "fp": s["fp"], "info": short(dirs.get(s["server"], "?")),
+            "pane": s["pane"], "stopped": s["state"] == "SUSPENDED",
+            "what": "nvim session %s" % name,
+        })
+        for q in sorted(s["tree"], key=pkey):
+            p = procs[q]
+            if p["fp"] < 8 * 1024 ** 2 and p["rss"] < 8 * 1024 ** 2 and p["pcpu"] < 1:
+                continue
+            label = label_for(p["args"])
+            rows.append({
+                "kind": "child", "name": "  └ " + label, "pid": q, "kill": q,
+                "state": "", "up": human_etime(p["etime"]), "cpu": p["pcpu"],
+                "rss": p["rss"], "fp": p["fp"], "info": "",
+                "pane": s["pane"], "stopped": p["stat"].startswith("T"),
+                "what": "%s (%d)" % (label, q),
+            })
+
+    if others:
+        rows.append({"kind": "header", "text": "LANGUAGE SERVERS OUTSIDE NVIM"})
+    for o in sorted(others, key=key):
+        rows.append({
+            "kind": "other", "name": o["label"], "pid": o["pid"], "kill": o["pid"],
+            "state": "", "up": human_etime(o["etime"]), "cpu": o["cpu"],
+            "rss": o["rss"], "fp": o["fp"],
+            "info": "from %s (%d) · %s" % (o["parent"], o["ppid"],
+                                            short(dirs.get(o["pid"], "?"))),
+            "pane": o["pane"], "stopped": False,
+            "what": "%s (%d)" % (o["label"], o["pid"]),
+        })
+    return rows
+
+
+def send_signal(row, sig):
+    """A stopped process only acts on SIGTERM once it is continued, so a
+    Ctrl-Z suspended nvim also gets a SIGCONT."""
+    os.kill(row["kill"], sig)
+    if row["stopped"] and sig != signal.SIGKILL:
+        os.kill(row["kill"], signal.SIGCONT)
+
+
+def live():
+    import curses
+
+    sampler = Sampler()
+    st = {"sel": 0, "top": 0, "sort": "fp", "msg": "", "confirm": None,
+          "termed": set()}
+    data = {}
+
+    def refresh_data():
+        procs, kids = sampler.sample()
+        sessions, others, dirs = collect(procs, kids)
+        data["every"] = sessions + others
+        data["rows"] = build_rows(sessions, others, dirs, procs, st["sort"])
+
+    def draw(scr):
+        scr.erase()
+        h, w = scr.getmaxyx()
+        rows, every = data["rows"], data["every"]
+
+        def put(y, x, text, attr=0):
+            if 0 <= y < h and x < w:
+                try:
+                    # The bottom-right cell can't be written without curses
+                    # trying to scroll, so the last line stops one short.
+                    scr.addnstr(y, x, text, w - x - (1 if y == h - 1 else 0), attr)
+                except curses.error:
+                    pass
+
+        title = " nvim-sessions · %s RSS · %s footprint · %.0f%% CPU · sorted by %s " % (
+            human(sum(x["rss"] for x in every)), human(sum(x["fp"] for x in every)),
+            sum(x["cpu"] for x in every), "CPU" if st["sort"] == "cpu" else "memory")
+        put(0, 0, title.ljust(w), curses.A_REVERSE)
+        fmt = "%-38s %-7s %-10s %-5s %6s %7s %9s  %s"
+        put(1, 0, fmt % ("NAME", "PID", "STATE", "UP", "CPU", "RSS", "FOOTPRINT", "INFO"),
+            curses.A_BOLD)
+
+        body_top, body_h = 2, max(1, h - 4)
+        selectable = [i for i, r in enumerate(rows) if r["kind"] != "header"]
+        cur = -1
+        if selectable:
+            st["sel"] = min(st["sel"], len(selectable) - 1)
+            cur = selectable[st["sel"]]
+            if cur < st["top"]:
+                st["top"] = max(0, cur - 1)  # keep its section header in view
+            elif cur >= st["top"] + body_h:
+                st["top"] = cur - body_h + 1
+
+        for i, r in enumerate(rows[st["top"]:st["top"] + body_h]):
+            y = body_top + i
+            if r["kind"] == "header":
+                put(y, 0, r["text"], curses.A_BOLD | curses.color_pair(4))
+                continue
+            line = fmt % (
+                r["name"][:38], r["pid"], r["state"], r["up"], "%.0f%%" % r["cpu"],
+                human(r["rss"]), human(r["fp"]), r["info"])
+            attr = 0 if r["kind"] == "child" else curses.A_BOLD
+            if r["fp"] > 4 * 1024 ** 3 or r["cpu"] > 80:
+                attr |= curses.color_pair(1)
+            elif (r["fp"] > 1024 ** 3 or r["cpu"] > 20
+                  or r["state"] in ("SUSPENDED", "ORPHANED")):
+                attr |= curses.color_pair(2)
+            if st["top"] + i == cur:
+                attr |= curses.A_REVERSE
+            put(y, 0, line.ljust(w), attr)
+
+        if not rows:
+            put(body_top, 0, "No Neovim sessions or language servers running.")
+
+        status = st["confirm"]["prompt"] if st["confirm"] else st["msg"]
+        put(h - 2, 0, status, curses.color_pair(3) | curses.A_BOLD)
+        put(h - 1, 0, FOOTER.ljust(w), curses.A_REVERSE)
+        scr.refresh()
+        return [rows[i] for i in selectable]
+
+    def answer_confirm(ch):
+        c = st["confirm"]
+        if ch == -1:
+            return  # refresh tick: keep asking
+        st["confirm"] = None
+        if ch not in (ord("y"), ord("Y")):
+            st["msg"] = "Cancelled"
+            return
+        try:
+            send_signal(c["row"], c["sig"])
+            st["termed"].add(c["row"]["kill"])
+            st["msg"] = "Sent %s to %s" % (c["sig"].name, c["row"]["what"])
+        except ProcessLookupError:
+            st["msg"] = "%s is already gone" % c["row"]["what"]
+        except PermissionError:
+            st["msg"] = "Not allowed to signal %s" % c["row"]["what"]
+        refresh_data()
+
+    def ask_kill(row):
+        # A second x on the same pid escalates, for a server that ignores TERM.
+        sig = signal.SIGKILL if row["kill"] in st["termed"] else signal.SIGTERM
+        warn = ""
+        if row["kind"] == "session":
+            warn = " Unsaved buffers are lost (swap files are kept)."
+        elif sig == signal.SIGKILL:
+            warn = " It is still running after SIGTERM."
+        st["confirm"] = {
+            "row": row, "sig": sig,
+            "prompt": "Send %s to %s?%s [y/N]" % (sig.name, row["what"], warn),
+        }
+
+    def main(scr):
+        curses.curs_set(0)
+        curses.use_default_colors()
+        for n, c in ((1, curses.COLOR_RED), (2, curses.COLOR_YELLOW),
+                     (3, curses.COLOR_CYAN), (4, curses.COLOR_BLUE)):
+            curses.init_pair(n, c, -1)
+        scr.timeout(REFRESH_MS)
+
+        refresh_data()
+        while True:
+            items = draw(scr)
+            ch = scr.getch()
+
+            if st["confirm"]:
+                answer_confirm(ch)
+                continue
+
+            if ch in (ord("q"), 27):
+                return
+            if ch in (ord("j"), curses.KEY_DOWN):
+                st["sel"] = min(st["sel"] + 1, max(0, len(items) - 1))
+            elif ch in (ord("k"), curses.KEY_UP):
+                st["sel"] = max(st["sel"] - 1, 0)
+            elif ch == ord("g"):
+                st["sel"] = 0
+            elif ch == ord("G"):
+                st["sel"] = max(0, len(items) - 1)
+            elif ch == ord("s"):
+                st["sort"] = "cpu" if st["sort"] == "fp" else "fp"
+                refresh_data()
+            elif ch in (10, 13, curses.KEY_ENTER) and items:
+                row = items[st["sel"]]
+                if row["pane"]:
+                    for cmd in row["pane"][1]:
+                        subprocess.run(cmd, capture_output=True)
+                    return
+                st["msg"] = "%s is not in a tmux or Rex pane" % row["what"]
+            elif ch == ord("x") and items:
+                ask_kill(items[st["sel"]])
+            elif ch in (ord("r"), -1, curses.KEY_RESIZE):
+                if ch == ord("r"):
+                    st["msg"] = ""
+                refresh_data()
+
+    # Escape is the quit key; without this curses waits a full second after it
+    # in case it starts an arrow-key sequence.
+    os.environ.setdefault("ESCDELAY", "25")
+    curses.wrapper(main)
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    if "--once" in args or not sys.stdout.isatty():
+        report(any(a in ("-t", "--tree") for a in args))
+    else:
+        try:
+            live()
+        except KeyboardInterrupt:
+            pass

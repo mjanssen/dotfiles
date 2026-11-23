@@ -5,6 +5,9 @@ return {
 			"williamboman/mason.nvim",
 			"williamboman/mason-lspconfig.nvim",
 
+			-- LSP progress (e.g. rust-analyzer indexing) in the bottom-right corner
+			{ "j-hui/fidget.nvim", lazy = false, opts = {} },
+
 			-- Autoformatting
 			{
 				"stevearc/conform.nvim",
@@ -69,21 +72,21 @@ return {
 				-- "I strongly recommend against using rust-analyzer managed by mason.nvim, as version mismatches between
 				-- rust-analyzer and your project toolchain can and most likely will lead to subtle issues."
 				"mrcjkb/rustaceanvim",
-				version = "^6",
+				version = "^9",
 				lazy = false,
 				init = function()
 					vim.g.rustaceanvim = {
 						server = {
 							default_settings = {
 								["rust-analyzer"] = {
-									-- Disable cache priming to save RAM
-									cachePriming = {
-										enable = false,
-									},
 									-- Don't eagerly load all feature flags
 									cargo = {
 										allFeatures = false,
 										buildScripts = { enable = true }, -- proc macros
+										-- Build into target/rust-analyzer instead of target/. Otherwise
+										-- clippy-on-save, build scripts and any terminal `cargo` (or a second
+										-- rust-analyzer) fight over the same cargo lock and wait on each other.
+										targetDir = true,
 									},
 									-- The boolean toggle
 									checkOnSave = true,
@@ -94,6 +97,7 @@ return {
 									},
 
 									files = {
+										watcher = "server",
 										excludeDirs = { "target", "node_modules", ".git", "dist" },
 									},
 								},
@@ -134,9 +138,14 @@ return {
 					settings = {},
 				},
 
+				-- vstls = {}
+
 				ts_ls = {
 					init_options = {
-						maxTsServerMemory = 8192,
+						-- Becomes --max-old-space-size. V8 grows lazily up to this ceiling
+						-- before it GCs hard, so a high value means tsserver drifts up and
+						-- stays there for the life of the session.
+						maxTsServerMemory = 3072,
 					},
 					-- always try the path imports, rather than relative paths
 					settings = {
@@ -173,7 +182,20 @@ return {
 					offset_encoding = "utf-16",
 				},
 
-				tailwindcss = true,
+				tailwindcss = {
+					-- Pin to the pnpm workspace root. By default every package with a
+					-- tailwind/postcss config becomes its own root, and Nvim starts a
+					-- separate client and server process for each one. The language
+					-- server finds all Tailwind entrypoints under a single workspace
+					-- folder by itself.
+					--
+					-- This has to be root_dir, not root_markers: lspconfig's
+					-- lsp/tailwindcss.lua defines root_dir as a function, and
+					-- root_markers is ignored whenever root_dir is set.
+					root_dir = function(bufnr, on_dir)
+						on_dir(vim.fs.root(bufnr, { "pnpm-workspace.yaml" }) or vim.fs.root(bufnr, { ".git" }))
+					end,
+				},
 			}
 
 			local servers_to_install = vim.tbl_filter(function(key)

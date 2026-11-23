@@ -9,57 +9,50 @@ return {
 		end,
 	},
 	{
-		"b0o/incline.nvim",
-		dependencies = {
-			"SmiteshP/nvim-navic",
-			"nvim-tree/nvim-web-devicons",
-		},
+		"SmiteshP/nvim-navic",
 		config = function()
-			local helpers = require("incline.helpers")
 			local navic = require("nvim-navic")
-			local devicons = require("nvim-web-devicons")
+			navic.setup({ lsp = { auto_attach = true }, highlight = true })
 
-			require("incline").setup({
-				window = {
-					-- width = "fill",
-					padding = { left = 1, right = 1 },
-					margin = {
-						horizontal = 1,
-						vertical = { top = 1, bottom = 0 },
-					},
-					placement = {
-						horizontal = "right",
-						vertical = "top",
-					},
-				},
-				render = function(props)
-					local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":.")
-					if filename == "" then
-						filename = "[No Name]"
+			local function escape(s)
+				return (s:gsub("%%", "%%%%"))
+			end
+
+			function _G.winbar()
+				local winid = vim.g.statusline_winid
+				local buf = vim.api.nvim_win_get_buf(winid)
+				local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":~:.")
+				if vim.bo[buf].modified then
+					path = path .. " ●"
+				end
+
+				local symbols, symbols_width = {}, 0
+				for _, item in ipairs(navic.get_data(buf) or {}) do
+					table.insert(
+						symbols,
+						"%#NavicSeparator# > %#NavicIcons" .. item.type .. "#" .. item.icon .. "%#NavicText#" .. escape(item.name)
+					)
+					symbols_width = symbols_width + 3 + vim.fn.strdisplaywidth(item.icon .. item.name)
+				end
+
+				local available = vim.api.nvim_win_get_width(winid) - symbols_width - 2
+				if vim.fn.strdisplaywidth(path) > available and available > 3 then
+					path = "..." .. vim.fn.strcharpart(path, vim.fn.strchars(path) - (available - 3))
+				end
+
+				return " %#WinBar#" .. escape(path) .. table.concat(symbols)
+			end
+
+			vim.api.nvim_create_autocmd({ "BufWinEnter", "BufFilePost" }, {
+				callback = function(args)
+					local win = vim.api.nvim_get_current_win()
+					if vim.api.nvim_win_get_config(win).relative ~= "" then
+						return
 					end
-					local ft_icon, ft_color = devicons.get_icon_color(filename)
-					local modified = vim.bo[props.buf].modified
-					local res = {
-						ft_icon and { " ", ft_icon, " ", guibg = ft_color, guifg = helpers.contrast_color(ft_color) }
-							or "",
-						" ",
-						{ filename, gui = modified and "bold,italic" or "bold" },
-					}
-					if props.focused then
-						for _, item in ipairs(navic.get_data(props.buf) or {}) do
-							table.insert(res, {
-								{ " > ", group = "NavicSeparator" },
-								{ item.icon, group = "NavicIcons" .. item.type },
-								{ item.name, group = "NavicText" },
-							})
-						end
-					end
-					table.insert(res, " ")
-					return res
+					local is_file = vim.bo[args.buf].buftype == "" and vim.api.nvim_buf_get_name(args.buf) ~= ""
+					vim.wo[win].winbar = is_file and "%!v:lua.winbar()" or ""
 				end,
 			})
 		end,
-		-- Optional: Lazy load Incline
-		event = "BufWinEnter",
 	},
 }

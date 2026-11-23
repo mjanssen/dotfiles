@@ -30,7 +30,8 @@ return {
 
 		opts.options = {
 			theme = "dracula",
-			icons_enabled = true,
+			icons_enabled = false,
+			globalstatus = true,
 		}
 	end,
 }

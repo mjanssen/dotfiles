@@ -1,14 +1,12 @@
-# Supply-chain delay: refuse versions younger than 30 days
-minimumReleaseAge: 43200
+# Supply-chain delay: refuse versions younger than x days
+minimumReleaseAge: 1440
 
 # Fail resolution if no in-range version satisfies the age constraint,
 # rather than silently falling back to a fresh (potentially compromised) version.
 # Auto-true when minimumReleaseAge is set explicitly, but state it for clarity.
 minimumReleaseAgeStrict: true
 
-# Fail if a registry omits the `time` field (some mirrors drop it,
-# which would otherwise bypass the age check entirely).
-minimumReleaseAgeIgnoreMissingTime: false
+minimumReleaseAgeIgnoreMissingTime: true
 
 # Refuse installs where trust evidence (provenance, trusted publisher)
 # has regressed compared to prior releases of the same package.

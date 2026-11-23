@@ -15,3 +15,6 @@ compinit
 source <(kubectl completion zsh)
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+
+# bun completions
+[ -s "/Users/mjanssen/.bun/_bun" ] && source "/Users/mjanssen/.bun/_bun"
